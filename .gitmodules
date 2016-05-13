@@ -1,0 +1,3 @@
+[submodule "TLSharp"]
+	path = TLSharp
+	url = https://github.com/Starli0n/F_TLSharp.git
