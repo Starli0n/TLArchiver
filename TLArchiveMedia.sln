@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TLArchiveMedia", "TLArchiveMedia\TLArchiveMedia.csproj", "{5EBAEBF4-5FE9-45B4-BBAA-110D0B623DED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TLSharp.Core", "TLSharp\TLSharp.Core\TLSharp.Core.csproj", "{400D2544-1CC6-4D8A-A62C-2292D9947A16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TLSharp.Tests", "TLSharp\TLSharp.Tests\TLSharp.Tests.csproj", "{DE5C0467-EE99-4734-95F2-EFF7A0B99924}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{5EBAEBF4-5FE9-45B4-BBAA-110D0B623DED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5EBAEBF4-5FE9-45B4-BBAA-110D0B623DED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5EBAEBF4-5FE9-45B4-BBAA-110D0B623DED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{400D2544-1CC6-4D8A-A62C-2292D9947A16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{400D2544-1CC6-4D8A-A62C-2292D9947A16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{400D2544-1CC6-4D8A-A62C-2292D9947A16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{400D2544-1CC6-4D8A-A62C-2292D9947A16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE5C0467-EE99-4734-95F2-EFF7A0B99924}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE5C0467-EE99-4734-95F2-EFF7A0B99924}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE5C0467-EE99-4734-95F2-EFF7A0B99924}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE5C0467-EE99-4734-95F2-EFF7A0B99924}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

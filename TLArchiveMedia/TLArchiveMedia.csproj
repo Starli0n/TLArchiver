@@ -46,16 +46,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ui\FormTLArchiveMedia.cs">
+    <Compile Include="Core\TLArchiveMedia.cs" />
+    <Compile Include="UI\FormTLArchiveMedia.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ui\FormTLArchiveMedia.Designer.cs">
+    <Compile Include="UI\FormTLArchiveMedia.Designer.cs">
       <DependentUpon>FormTLArchiveMedia.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TLArchiveMedia.cs" />
-    <EmbeddedResource Include="ui\FormTLArchiveMedia.resx">
+    <EmbeddedResource Include="UI\FormTLArchiveMedia.resx">
       <DependentUpon>FormTLArchiveMedia.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -83,6 +83,13 @@
   <ItemGroup>
     <Content Include="../td_logo.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TLSharp\TLSharp.Core\TLSharp.Core.csproj">
+      <Project>{400d2544-1cc6-4d8a-a62c-2292d9947a16}</Project>
+      <Name>TLSharp.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
