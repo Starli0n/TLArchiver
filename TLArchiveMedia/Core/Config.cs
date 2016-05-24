@@ -10,6 +10,7 @@ namespace TLArchiveMedia
         public string NumberToAuthenticate { get; set; }
         public string NumberToSendMessage { get; set; }
         public string UserNameToSendMessage { get; set; }
+        public string ExportDirectory { get; set; }
 
         static public void Load(Config config)
         {
@@ -18,6 +19,7 @@ namespace TLArchiveMedia
             config.NumberToAuthenticate = ConfigurationManager.AppSettings["NumberToAuthenticate"];
             config.NumberToSendMessage = ConfigurationManager.AppSettings["NumberToSendMessage"];
             config.UserNameToSendMessage = ConfigurationManager.AppSettings["UserNameToSendMessage"];
+            config.ExportDirectory = ConfigurationManager.AppSettings["ExportDirectory"];
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.IO;
+using System.Windows.Forms;
 
 namespace TLArchiveMedia
 {
@@ -43,6 +45,28 @@ namespace TLArchiveMedia
         private void m_bLogin_Click(object sender, System.EventArgs e)
         {
             Connected = m_tlArchiveMedia.MakeAuth(m_tbCode.Text);
+        }
+
+        private void m_cbFromDate_CheckedChanged(object sender, System.EventArgs e)
+        {
+            m_dtpFrom.Enabled = m_cbFromDate.Checked;
+        }
+
+        private void m_cbToDate_CheckedChanged(object sender, System.EventArgs e)
+        {
+            m_dtpTo.Enabled = m_cbToDate.Checked;
+        }
+
+        private void m_bExport_Click(object sender, System.EventArgs e)
+        {
+            m_tlArchiveMedia.ExportDirectory = m_config.ExportDirectory;
+#if (!DEBUG)
+            m_tlArchiveMedia.ExportDirectory += DateTime.Now.ToString("_yyyy_MM_dd_HH_mm_ss");
+#endif
+            Directory.CreateDirectory(m_tlArchiveMedia.ExportDirectory);
+            m_tlArchiveMedia.Export(
+                m_cbFromDate.Checked ? m_dtpFrom.Value : DateTime.MinValue,
+                m_cbToDate.Checked ? m_dtpTo.Value : DateTime.MaxValue);
         }
     }
 }
