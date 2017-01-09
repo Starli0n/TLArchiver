@@ -1,4 +1,4 @@
-﻿namespace TLArchiveMedia.UI
+﻿namespace TLArchiver.UI
 {
     partial class FormExport
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{5EBAEBF4-5FE9-45B4-BBAA-110D0B623DED}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TLArchiveMedia</RootNamespace>
-    <AssemblyName>TLArchiveMedia</AssemblyName>
+    <RootNamespace>TLArchiver</RootNamespace>
+    <AssemblyName>TLArchiver</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -51,8 +51,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Config.cs" />
-    <Compile Include="Core\TLArchiveMedia.cs" />
-    <Compile Include="Core\TLException.cs" />
+    <Compile Include="Core\TLAArchiver.cs" />
+    <Compile Include="Core\TLAException.cs" />
     <Compile Include="Entities\TLADialog.cs" />
     <Compile Include="Entities\TLADialogType.cs" />
     <Compile Include="UI\DatagridViewCheckBoxHeaderCell.cs" />
@@ -62,11 +62,11 @@
     <Compile Include="UI\FormExport.Designer.cs">
       <DependentUpon>FormExport.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\FormTLArchiveMedia.cs">
+    <Compile Include="UI\FormTLArchiver.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\FormTLArchiveMedia.Designer.cs">
-      <DependentUpon>FormTLArchiveMedia.cs</DependentUpon>
+    <Compile Include="UI\FormTLArchiver.Designer.cs">
+      <DependentUpon>FormTLArchiver.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -80,8 +80,8 @@
     <EmbeddedResource Include="UI\FormExport.resx">
       <DependentUpon>FormExport.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\FormTLArchiveMedia.resx">
-      <DependentUpon>FormTLArchiveMedia.cs</DependentUpon>
+    <EmbeddedResource Include="UI\FormTLArchiver.resx">
+      <DependentUpon>FormTLArchiver.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -1,6 +1,6 @@
-﻿namespace TLArchiveMedia.UI
+﻿namespace TLArchiver.UI
 {
-    partial class FormTLArchiveMedia
+    partial class FormTLArchiver
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormTLArchiveMedia));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormTLArchiver));
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.m_status = new System.Windows.Forms.ToolStripStatusLabel();
             this.m_lCode = new System.Windows.Forms.Label();

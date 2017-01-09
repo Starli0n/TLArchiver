@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace TLArchiveMedia
+namespace TLArchiver
 {
     static class Program
     {
@@ -15,7 +15,7 @@ namespace TLArchiveMedia
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new UI.FormTLArchiveMedia());
+                Application.Run(new UI.FormTLArchiver());
             }
             catch(Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿namespace TLArchiveMedia.Entities
+﻿namespace TLArchiver.Entities
 {
     public enum TLADialogType
     {

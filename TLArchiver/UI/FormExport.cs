@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using TeleSharp.TL;
-using TLArchiveMedia.Entities;
+using TLArchiver.Core;
+using TLArchiver.Entities;
 
-namespace TLArchiveMedia.UI
+namespace TLArchiver.UI
 {
     public partial class FormExport : Form
     {
@@ -23,7 +24,7 @@ namespace TLArchiveMedia.UI
 
         private void FormExport_Shown(object sender, System.EventArgs e)
         {
-            FormTLArchiveMedia arg = this.Owner as FormTLArchiveMedia;
+            FormTLArchiver arg = this.Owner as FormTLArchiver;
             if (arg == null)
                 throw new TLUIException("Owner is not a FormTLArchiveMedia");
 

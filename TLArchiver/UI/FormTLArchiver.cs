@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
-using TLArchiveMedia.Entities;
+using TLArchiver.Core;
+using TLArchiver.Entities;
 
-namespace TLArchiveMedia.UI
+namespace TLArchiver.UI
 {
-    public partial class FormTLArchiveMedia : Form
+    public partial class FormTLArchiver : Form
     {
         private Config m_config;
-        private TLArchiver m_archiver;
+        private TLAArchiver m_archiver;
         private bool m_bConnected;
         private bool m_bIsDialogsCheckedChanging = false;
         private bool m_bIsContentCheckedChanging = false;
@@ -22,7 +23,7 @@ namespace TLArchiveMedia.UI
         private ListSortDirection m_direction = ListSortDirection.Ascending;
         private DatagridViewCheckBoxHeaderCell m_cbHeader;
 
-        public TLArchiver Archiver { get { return m_archiver; } }
+        public TLAArchiver Archiver { get { return m_archiver; } }
         public ICollection<TLADialog> Dialogs { get { return m_dialogView; } }
 
         public bool IsFromDate { get { return m_cbFromDate.Checked; } }
@@ -39,12 +40,12 @@ namespace TLArchiveMedia.UI
         public bool ExportText { get { return m_cbText.Checked; } }
         public bool ExportHtml { get { return m_cbHtml.Checked; } }
 
-        public FormTLArchiveMedia()
+        public FormTLArchiver()
         {
             InitializeComponent();
             m_config = new Config();
             Config.Load(m_config);
-            m_archiver = new TLArchiver(m_config);
+            m_archiver = new TLAArchiver(m_config);
             // Grid configuration
             m_dialogSource.DataSource = m_dialogView; // m_dialogSource.SupportsFiltering: true
             m_dgvDialogs.DataSource = m_dialogSource; // Initialize the grid

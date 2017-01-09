@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TLArchiveMedia
+namespace TLArchiver.Core
 {
     abstract class TLBaseException : Exception
     {

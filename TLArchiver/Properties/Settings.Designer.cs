@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TLArchiveMedia.Properties
+namespace TLArchiver.Properties
 {
 
 

@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace TLArchiveMedia
+namespace TLArchiver.UI
 {
     // CheckBox Header Column For DataGridView
     // http://www.codeproject.com/Articles/20165/CheckBox-Header-Column-For-DataGridView

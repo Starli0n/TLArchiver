@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 
-namespace TLArchiveMedia
+namespace TLArchiver.Core
 {
     // https://my.telegram.org to obtain your own ApiId and ApiHash
 

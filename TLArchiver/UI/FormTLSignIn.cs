@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace TLArchiveMedia.UI
+namespace TLArchiver.UI
 {
     public partial class FormTLSignIn : Form
     {

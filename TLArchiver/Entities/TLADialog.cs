@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TLArchiveMedia.Entities
+namespace TLArchiver.Entities
 {
     public class TLADialog
     {

@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using TeleSharp.TL;
 using TeleSharp.TL.Contacts;
 using TeleSharp.TL.Messages;
-using TLArchiveMedia.Entities;
+using TLArchiver.Entities;
+using TLArchiver.Utils;
 using TLSharp.Core;
 
-namespace TLArchiveMedia
+namespace TLArchiver.Core
 {
-    public class TLArchiver
+    public class TLAArchiver
     {
         private static readonly List<string> c_sExtensions = new List<string>() { "jpg", "gif", "png" };
         private static readonly DateTime c_date0 = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
@@ -23,7 +24,7 @@ namespace TLArchiveMedia
         private string m_sPrefix;
         private Dictionary<string, int> m_ExtToIndex;
 
-        public TLArchiver(Config config)
+        public TLAArchiver(Config config)
         {
             m_config = config;
             m_store = new FileSessionStore();
