@@ -160,12 +160,12 @@ namespace TLArchiver.Core
             return slice.count;
         }
 
-        public IEnumerable<TLAbsMessage> GetMessages(TLADialog dialog, int iTotal)
+        public IEnumerable<TLAbsMessage> GetMessages(TLADialog dialog)
         {
             TLAbsInputPeer peer = CreatePeerFromDialog(dialog);
 
             int iRead = 0;
-            while (iRead < iTotal)
+            while (iRead < dialog.Total)
             {
                 var messages = (TLAbsMessages)AsyncHelpers.RunSync<TLAbsMessages>(() => m_client.GetHistoryAsync(peer, iRead, 0, m_config.MessagesReadLimit));
 

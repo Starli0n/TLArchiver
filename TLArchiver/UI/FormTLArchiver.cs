@@ -95,6 +95,9 @@ namespace TLArchiver.UI
             m_dialogs.AddRange(m_archiver.GetUserDialogs());
             m_dialogs.AddRange(m_archiver.GetContacts());
 
+            /*foreach (TLADialog dialog in m_dialogs)
+                dialog.Total = m_archiver.GetTotalMessages(dialog);*/
+
             UpdateView();
         }
 

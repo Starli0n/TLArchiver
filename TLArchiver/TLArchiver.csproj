@@ -53,6 +53,7 @@
     <Compile Include="Core\Config.cs" />
     <Compile Include="Core\TLAArchiver.cs" />
     <Compile Include="Core\TLAException.cs" />
+    <Compile Include="Core\TLAExporter.cs" />
     <Compile Include="Entities\TLADialog.cs" />
     <Compile Include="Entities\TLADialogType.cs" />
     <Compile Include="UI\DatagridViewCheckBoxHeaderCell.cs" />

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
-using TeleSharp.TL;
 using TLArchiver.Core;
 using TLArchiver.Entities;
 
@@ -10,7 +10,8 @@ namespace TLArchiver.UI
 {
     public partial class FormExport : Form
     {
-        private bool m_bUserAbort = false;
+        private TLAExporter m_exporter;
+        private Thread m_exporterThread;
 
         public FormExport()
         {
@@ -24,51 +25,87 @@ namespace TLArchiver.UI
 
         private void FormExport_Shown(object sender, System.EventArgs e)
         {
+            // Prepare arguments
             FormTLArchiver arg = this.Owner as FormTLArchiver;
             if (arg == null)
                 throw new TLUIException("Owner is not a FormTLArchiveMedia");
+            TLAArchiver archiver = arg.Archiver;
+            ICollection<TLADialog> dialogList = arg.Dialogs.Where(d => d.Selected).ToList(); // Process selected dialogs only
 
-            // Process selected dialogs only
-            ICollection<TLADialog> dialogs = arg.Dialogs.Where(d => d.Selected).ToList();
+            // How to: Create and Terminate Threads
+            // https://msdn.microsoft.com/en-us/library/7a2f3ay4(v=vs.100).aspx
 
-            m_pbDialogs.Maximum = dialogs.Count;
-            foreach (TLADialog dialog in dialogs)
+            // Create the worker thread object. This does not start the thread.
+            m_exporter = new TLAExporter(archiver, dialogList);
+            m_exporterThread = new Thread(m_exporter.Start);
+            m_exporterThread.Name = "Export Thread";
+
+            // Initialize the callback to establish the communication between the worker and the UI
+            // Use delegate for a loose coupling
+            // Since the worker and the UI are not in the same thread use the 'Invoke' template
+            // https://msdn.microsoft.com/en-us/library/ms171728(v=vs.110).aspx
+            m_exporter.BeginProcessingDialogs = dialogs =>
             {
-                m_pbMessages.Maximum = arg.Archiver.GetTotalMessages(dialog);
-
-                m_lStatusDialog.Text = dialog.Title;
-                m_lStatusCurrent.Text = m_pbMessages.Value.ToString();
-                m_lStatusTotal.Text = "/ " + m_pbMessages.Maximum.ToString();
-
-                foreach (TLAbsMessage absMessage in arg.Archiver.GetMessages(dialog, m_pbMessages.Maximum))
+                BeginInvoke(new BeginProcessingDialogsDel(d =>
                 {
+                    m_pbDialogs.Maximum = d.Count;
+                }),
+                new object[] { dialogs });
+            };
+            
+            m_exporter.BeginProcessingDialog = dialog =>
+            {
+                BeginInvoke(new BeginProcessingDialogDel(d =>
+                {
+                    m_pbMessages.Maximum = d.Total;
+                    m_lStatusDialog.Text = d.Title;
+                    m_lStatusCurrent.Text = "0";
+                    m_lStatusTotal.Text = "/ " + m_pbMessages.Maximum.ToString();
+                }),
+                new object[] { dialog });
+            };
 
-                    var message = absMessage as TLMessage;
-                    if (message != null)
-                    {
-                        // TODO: Process a message
-                    }
-                    else
-                    {
-                        var messageService = absMessage as TLMessageService;
-                        if (messageService == null)
-                            throw new TLCoreException("The message is not a TLMessage or a TLMessageService");
-                        // TODO: Process a message service
-                    }
+            m_exporter.EndProcessingMessage = () =>
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
                     m_pbMessages.Value++;
                     m_lStatusCurrent.Text = m_pbMessages.Value.ToString();
-                }
-                m_pbDialogs.Value++;
-            }
+                });
+            };
 
-            m_bAbort.Enabled = false;
-            m_bOk.Enabled = true;
+            m_exporter.EndProcessingDialog = () =>
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    m_pbDialogs.Value++;
+                });
+            };
+
+            m_exporter.EndProcessingDialogs = () =>
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    m_bAbort.Enabled = false;
+                    m_bOk.Enabled = true;
+                });
+            };
+
+            // Start the worker thread.
+            m_exporterThread.Start();
+
+            // Loop until the worker thread activates.
+            while (!m_exporterThread.IsAlive);
         }
 
         private void m_bAbort_Click(object sender, System.EventArgs e)
         {
-            // TODO: Main process should be in a thread to be able to be aborted
-            m_bUserAbort = true;
+            // Request that the worker thread stop itself.
+            m_exporter.RequestStop();
+
+            // Use the Thread.Join method to block the current thread
+            // until the object's thread terminates.
+            m_exporterThread.Join();
         }
     }
 }

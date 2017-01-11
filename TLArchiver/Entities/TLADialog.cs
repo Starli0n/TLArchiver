@@ -10,5 +10,6 @@ namespace TLArchiver.Entities
         public string Title { get; set; }
         public DateTime Date { get; set; }
         public bool Closed { get; set; }
+        public int Total { get; set; }
     }
 }
