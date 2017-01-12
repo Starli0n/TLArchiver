@@ -6,6 +6,7 @@ namespace TLArchiver.Entities
     {
         public bool Selected { get; set; }
         public int Id { get; set; }
+        public long AccessHash { get; set; }
         public TLADialogType Type { get; set; }
         public string Title { get; set; }
         public DateTime Date { get; set; }

@@ -69,7 +69,7 @@
             this.m_status});
             this.statusStrip.Location = new System.Drawing.Point(0, 681);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(681, 22);
+            this.statusStrip.Size = new System.Drawing.Size(761, 22);
             this.statusStrip.TabIndex = 0;
             // 
             // m_status
@@ -146,7 +146,7 @@
             // m_bExport
             // 
             this.m_bExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_bExport.Location = new System.Drawing.Point(594, 655);
+            this.m_bExport.Location = new System.Drawing.Point(674, 655);
             this.m_bExport.Name = "m_bExport";
             this.m_bExport.Size = new System.Drawing.Size(75, 23);
             this.m_bExport.TabIndex = 10;
@@ -162,7 +162,7 @@
             this.m_dgvDialogs.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.m_dgvDialogs.Location = new System.Drawing.Point(12, 106);
             this.m_dgvDialogs.Name = "m_dgvDialogs";
-            this.m_dgvDialogs.Size = new System.Drawing.Size(657, 543);
+            this.m_dgvDialogs.Size = new System.Drawing.Size(737, 543);
             this.m_dgvDialogs.TabIndex = 11;
             this.m_dgvDialogs.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.m_dgvDialogs_DataBindingComplete);
             // 
@@ -349,11 +349,11 @@
             this.m_cbExportAll.UseVisualStyleBackColor = true;
             this.m_cbExportAll.CheckedChanged += new System.EventHandler(this.m_cbExportAll_CheckedChanged);
             // 
-            // FormTLArchiveMedia
+            // FormTLArchiver
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(681, 703);
+            this.ClientSize = new System.Drawing.Size(761, 703);
             this.Controls.Add(this.m_gbExport);
             this.Controls.Add(this.m_gbContent);
             this.Controls.Add(this.m_gbDialogs);
@@ -368,7 +368,7 @@
             this.Controls.Add(this.m_lCode);
             this.Controls.Add(this.statusStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "FormTLArchiveMedia";
+            this.Name = "FormTLArchiver";
             this.Text = "TLArchiveMedia";
             this.Load += new System.EventHandler(this.FormTLArchiveMedia_Load);
             this.statusStrip.ResumeLayout(false);

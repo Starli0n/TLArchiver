@@ -36,7 +36,7 @@ namespace TLArchiver.UI
             // https://msdn.microsoft.com/en-us/library/7a2f3ay4(v=vs.100).aspx
 
             // Create the worker thread object. This does not start the thread.
-            m_exporter = new TLAExporter(archiver, dialogList);
+            m_exporter = new TLAExporter(archiver.GetConfig(), archiver, dialogList);
             m_exporterThread = new Thread(m_exporter.Start);
             m_exporterThread.Name = "Export Thread";
 

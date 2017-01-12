@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using TLArchiver.Core;
 using TLArchiver.Entities;
+using TLSharp.Core.Network;
 
 namespace TLArchiver.UI
 {
@@ -19,7 +21,7 @@ namespace TLArchiver.UI
         private BindingSource m_dialogSource = new BindingSource();
         private BindingList<TLADialog> m_dialogView = new BindingList<TLADialog>();
         private List<TLADialog> m_dialogs = new List<TLADialog>();
-        private int m_orderIndex = 0;
+        private string m_orderColumnName;
         private ListSortDirection m_direction = ListSortDirection.Ascending;
         private DatagridViewCheckBoxHeaderCell m_cbHeader;
 
@@ -46,6 +48,7 @@ namespace TLArchiver.UI
             m_config = new Config();
             Config.Load(m_config);
             m_archiver = new TLAArchiver(m_config);
+            m_orderColumnName = "";
             // Grid configuration
             m_dialogSource.DataSource = m_dialogView; // m_dialogSource.SupportsFiltering: true
             m_dgvDialogs.DataSource = m_dialogSource; // Initialize the grid
@@ -53,15 +56,25 @@ namespace TLArchiver.UI
             m_dgvDialogs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             m_dgvDialogs.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             m_dgvDialogs.AllowUserToAddRows = false;
-            // Fill the last column to match the resize of the form
-            m_dgvDialogs.Columns[m_dgvDialogs.Columns.Count - 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             // The grid is readonly except for the 1st column which is the selection
             foreach (DataGridViewColumn col in m_dgvDialogs.Columns)
                 col.ReadOnly = true;
-            DataGridViewColumn selectedCol = m_dgvDialogs.Columns[0];
+            DataGridViewColumn selectedCol = m_dgvDialogs.Columns["Selected"];
             selectedCol.ReadOnly = false;
             selectedCol.Width = 50;
-            m_dgvDialogs.Columns[3].Width = 200; // Enlarge the 'Title' column
+            if (m_config.CountMessagesAtLaunch)
+            {
+                // Fill the last column to match the resize of the form
+                m_dgvDialogs.Columns["Total"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;                
+            }
+            else
+            {
+                m_dgvDialogs.Columns["Total"].Visible = false; // Hide the 'Total' column
+                m_dgvDialogs.Columns["Closed"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill; // Become the last column
+                Width -= 80;
+            }
+            m_dgvDialogs.Columns["AccessHash"].Visible = false; // Hide the 'AccessHash' column
+            m_dgvDialogs.Columns["Title"].Width = 200; // Enlarge the 'Title' column
             // Add an event on the header cell to sort the grid
             m_dgvDialogs.ColumnHeaderMouseClick += new DataGridViewCellMouseEventHandler(m_dgvDialogs_ColumnHeaderMouseClick);
             // CheckBox event handler walkaround https://stackoverflow.com/questions/11843488/datagridview-checkbox-event
@@ -95,8 +108,30 @@ namespace TLArchiver.UI
             m_dialogs.AddRange(m_archiver.GetUserDialogs());
             m_dialogs.AddRange(m_archiver.GetContacts());
 
-            /*foreach (TLADialog dialog in m_dialogs)
-                dialog.Total = m_archiver.GetTotalMessages(dialog);*/
+            if (m_config.CountMessagesAtLaunch)
+                foreach (TLADialog dialog in m_dialogs)
+                {
+                    try
+                    {
+                        dialog.Total = m_archiver.GetTotalMessages(dialog);
+                    }
+                    catch (AggregateException e)
+                    {
+                        if (e.InnerException.GetType() == typeof(InvalidOperationException))
+                        {
+                            // CHANNEL_PRIVATE
+                        }
+                        else if (e.InnerException.GetType() == typeof(FloodException))
+                        {
+                            FloodException f = (FloodException)e.InnerException;
+                            Thread.Sleep((int)f.TimeToWait.TotalMilliseconds);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw e;
+                    }
+                }
 
             UpdateView();
         }
@@ -127,41 +162,65 @@ namespace TLArchiver.UI
                 filter = m_dialogs;
 
             // OrderBy Clause
-            if (m_orderIndex == 1)
+
+            if (m_orderColumnName == "Selected")
+            {
+                if (m_direction == ListSortDirection.Ascending)
+                    filter = filter.OrderBy(d => d.Selected);
+                else
+                    filter = filter.OrderByDescending(d => d.Selected);
+            }
+            else if (m_orderColumnName == "Id")
             {
                 if (m_direction == ListSortDirection.Ascending)
                     filter = filter.OrderBy(d => d.Id);
                 else
                     filter = filter.OrderByDescending(d => d.Id);
             }
-            else if (m_orderIndex == 2)
+            else if (m_orderColumnName == "AccessHash")
+            {
+                if (m_direction == ListSortDirection.Ascending)
+                    filter = filter.OrderBy(d => d.AccessHash);
+                else
+                    filter = filter.OrderByDescending(d => d.AccessHash);
+            }
+            else if (m_orderColumnName == "Type")
             {
                 if (m_direction == ListSortDirection.Ascending)
                     filter = filter.OrderBy(d => d.Type);
                 else
                     filter = filter.OrderByDescending(d => d.Type);
             }
-            else if (m_orderIndex == 3)
+            else if (m_orderColumnName == "Title")
             {
                 if (m_direction == ListSortDirection.Ascending)
                     filter = filter.OrderBy(d => d.Title);
                 else
                     filter = filter.OrderByDescending(d => d.Title);
             }
-            else if (m_orderIndex == 4)
+            else if (m_orderColumnName == "Date")
             {
                 if (m_direction == ListSortDirection.Ascending)
                     filter = filter.OrderBy(d => d.Date);
                 else
                     filter = filter.OrderByDescending(d => d.Date);
             }
-            else if (m_orderIndex == 5)
+            else if (m_orderColumnName == "Closed")
             {
                 if (m_direction == ListSortDirection.Ascending)
                     filter = filter.OrderBy(d => d.Closed);
                 else
                     filter = filter.OrderByDescending(d => d.Closed);
             }
+            else if (m_orderColumnName == "Total")
+            {
+                if (m_direction == ListSortDirection.Ascending)
+                    filter = filter.OrderBy(d => d.Total);
+                else
+                    filter = filter.OrderByDescending(d => d.Total);
+            }
+            else if (m_orderColumnName != "")
+                throw new TLUIException("Column name not referenced for sorting data");
 
             // Update the View with the filter
             foreach (TLADialog dialog in filter)
@@ -330,7 +389,7 @@ namespace TLArchiver.UI
             m_cbHeader = new DatagridViewCheckBoxHeaderCell();
             m_cbHeader.Value = "";
             m_cbHeader.OnCheckBoxClicked += new CheckBoxClickedHandler(m_cbHeader_CheckBoxClicked);
-            m_dgvDialogs.Columns[0].HeaderCell = m_cbHeader;
+            m_dgvDialogs.Columns["Selected"].HeaderCell = m_cbHeader;
             m_dgvDialogs.ClearSelection();
         }
 
@@ -359,7 +418,7 @@ namespace TLArchiver.UI
 
         private void m_dgvDialogs_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            m_orderIndex = e.ColumnIndex;
+            m_orderColumnName = m_dgvDialogs.Columns[e.ColumnIndex].Name;
             UpdateView();
             m_direction = m_direction == ListSortDirection.Ascending
                 ? ListSortDirection.Descending : ListSortDirection.Ascending;

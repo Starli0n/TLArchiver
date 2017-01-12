@@ -26,6 +26,7 @@ namespace TLArchiver.Core
         public string NumberToAddToChat { get; set; }
         public string ExportDirectory { get; set; }
         public int MessagesReadLimit { get; set; }
+        public bool CountMessagesAtLaunch { get; set; }
 
         static public void Load(Config config)
         {
@@ -42,6 +43,7 @@ namespace TLArchiver.Core
             config.NumberToAddToChat = ConfigurationManager.AppSettings["NumberToAddToChat"];
             config.ExportDirectory = ConfigurationManager.AppSettings["ExportDirectory"];
             config.MessagesReadLimit = Int32.Parse(ConfigurationManager.AppSettings["MessagesReadLimit"]);
+            config.CountMessagesAtLaunch = Boolean.Parse(ConfigurationManager.AppSettings["CountMessagesAtLaunch"]);
         }
     }
 }

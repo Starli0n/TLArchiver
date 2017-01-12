@@ -12,12 +12,18 @@ namespace TLArchiver.Core
     class TLUIException : TLBaseException
     {
         public TLUIException(string sMessage)
-            : base() { }
+            : base(sMessage) { }
     }
 
     class TLCoreException : TLBaseException
     {
         public TLCoreException(string sMessage)
-            : base() { }
+            : base(sMessage) { }
+    }
+
+    class TLAccessHashException : TLCoreException
+    {
+        public TLAccessHashException()
+            : base("access_hash expected but is null") { }
     }
 }

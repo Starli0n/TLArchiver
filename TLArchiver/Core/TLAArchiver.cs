@@ -96,9 +96,12 @@ namespace TLArchiver.Core
                 else if (absChat.GetType() == typeof(TLChannel))
                 {
                     var channel = (TLChannel)absChat;
+                    if (channel.access_hash == null)
+                        throw new TLAccessHashException();
                     yield return new TLADialog()
                     {
                         Id = channel.id,
+                        AccessHash = (long) channel.access_hash,
                         Type = TLADialogType.Channel,
                         Title = channel.title,
                         Date = c_date0.AddSeconds(channel.date).ToLocalTime(),
@@ -122,6 +125,7 @@ namespace TLArchiver.Core
                     yield return new TLADialog()
                     {
                         Id = channelF.id,
+                        AccessHash = channelF.access_hash,
                         Type = TLADialogType.Channel,
                         Title = channelF.title,
                         Closed = true
@@ -136,11 +140,11 @@ namespace TLArchiver.Core
         {
             TLAbsInputPeer peer = null;
             if (dialog.Type == TLADialogType.Channel)
-                peer = new TLInputPeerChannel() { channel_id = dialog.Id };
+                peer = new TLInputPeerChannel() { channel_id = dialog.Id, access_hash = dialog.AccessHash };
             else if (dialog.Type == TLADialogType.Chat)
                 peer = new TLInputPeerChat() { chat_id = dialog.Id };
             else if (dialog.Type == TLADialogType.User)
-                peer = new TLInputPeerUser() { user_id = dialog.Id };
+                peer = new TLInputPeerUser() { user_id = dialog.Id, access_hash = dialog.AccessHash };
             else
                 throw new TLCoreException("Type of TLDialog is unknown");
             return peer;
@@ -153,11 +157,14 @@ namespace TLArchiver.Core
             // Get only one message to have the total amount of messages
             var messages = (TLAbsMessages)AsyncHelpers.RunSync<TLAbsMessages>(() => m_client.GetHistoryAsync(peer, 0, 0, 1));
 
-            var slice = messages as TLMessagesSlice;
-            if (slice == null)
-                throw new TLCoreException("The message is not a TLMessagesSlice");
+            if (messages is TLChannelMessages)
+                return ((TLChannelMessages)messages).count;
+            else if (messages is TLMessagesSlice)
+                return ((TLMessagesSlice)messages).count;
+            else if (messages is TLMessages)
+                return 0; // a user without any talk
 
-            return slice.count;
+            throw new TLCoreException("Unable to find the implementation of TLAbsMessages");
         }
 
         public IEnumerable<TLAbsMessage> GetMessages(TLADialog dialog)
@@ -257,6 +264,11 @@ namespace TLArchiver.Core
                 return m_ExtToIndex[ext]++;
             else
                 return c_iInitialIndex;
+        }
+
+        public Config GetConfig()
+        {
+            return m_config;
         }
 
         public string ExportDirectory { get; set; }

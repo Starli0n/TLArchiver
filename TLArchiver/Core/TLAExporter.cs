@@ -18,11 +18,13 @@ namespace TLArchiver.Core
         public Action EndProcessingDialog;
         public Action EndProcessingDialogs;
 
+        Config m_config;
         TLAArchiver m_archiver;
         ICollection<TLADialog> m_dialogs;
 
-        public TLAExporter(TLAArchiver archiver, ICollection<TLADialog> dialogs)
+        public TLAExporter(Config config, TLAArchiver archiver, ICollection<TLADialog> dialogs)
         {
+            m_config = config;
             m_archiver = archiver;
             m_dialogs = dialogs;
             BeginProcessingDialogs = null;
@@ -35,7 +37,8 @@ namespace TLArchiver.Core
 
             foreach (TLADialog dialog in m_dialogs)
             {
-                dialog.Total = m_archiver.GetTotalMessages(dialog);
+                if (!m_config.CountMessagesAtLaunch)
+                    dialog.Total = m_archiver.GetTotalMessages(dialog);
 
                 if (BeginProcessingDialog != null)
                     BeginProcessingDialog(dialog);
