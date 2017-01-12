@@ -15,6 +15,7 @@ namespace TLArchiver.UI
         private Config m_config;
         private TLAArchiver m_archiver;
         private bool m_bConnected;
+        private bool m_bIsHeaderCheckBoxClicked = false;
         private bool m_bIsDialogsCheckedChanging = false;
         private bool m_bIsContentCheckedChanging = false;
         private bool m_bIsExportCheckedChanging = false;
@@ -104,6 +105,13 @@ namespace TLArchiver.UI
 
         private void LoadGrid()
         {
+            // Remove the text header of the first column and replace it by a "(Un)Select All" checkbox
+            m_cbHeader = new DatagridViewCheckBoxHeaderCell();
+            m_cbHeader.Value = "";
+            m_cbHeader.OnCheckBoxClicked += new CheckBoxClickedHandler(m_cbHeader_CheckBoxClicked);
+            m_dgvDialogs.Columns["Selected"].HeaderCell = m_cbHeader;
+            m_dgvDialogs.ClearSelection();
+
             m_dialogs.Clear();
             m_dialogs.AddRange(m_archiver.GetUserDialogs());
             m_dialogs.AddRange(m_archiver.GetContacts());
@@ -162,7 +170,6 @@ namespace TLArchiver.UI
                 filter = m_dialogs;
 
             // OrderBy Clause
-
             if (m_orderColumnName == "Selected")
             {
                 if (m_direction == ListSortDirection.Ascending)
@@ -383,16 +390,6 @@ namespace TLArchiver.UI
                 m_cbToDate.Checked ? m_dtpTo.Value : DateTime.MaxValue);*/
         }
 
-        private void m_dgvDialogs_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        {
-            // Remove the text header of the first column and replace it by a "(Un)Select All" checkbox
-            m_cbHeader = new DatagridViewCheckBoxHeaderCell();
-            m_cbHeader.Value = "";
-            m_cbHeader.OnCheckBoxClicked += new CheckBoxClickedHandler(m_cbHeader_CheckBoxClicked);
-            m_dgvDialogs.Columns["Selected"].HeaderCell = m_cbHeader;
-            m_dgvDialogs.ClearSelection();
-        }
-
         public void m_cbHeader_CheckBoxClicked(bool bState)
         {
             // Propagate the state of the checbox header to all checkbox in the column
@@ -402,6 +399,7 @@ namespace TLArchiver.UI
             m_dgvDialogs.Update();
             m_dgvDialogs.Refresh();
             m_bExport.Select(); // Set the focus on Export button
+            m_bIsHeaderCheckBoxClicked = true;
         }
 
         private void m_dgvDialogs_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -418,6 +416,13 @@ namespace TLArchiver.UI
 
         private void m_dgvDialogs_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
+            if (m_bIsHeaderCheckBoxClicked)
+            {
+                // Do not sort whenever the title checkbox is clicked
+                m_bIsHeaderCheckBoxClicked = false;
+                return;
+            }
+
             m_orderColumnName = m_dgvDialogs.Columns[e.ColumnIndex].Name;
             UpdateView();
             m_direction = m_direction == ListSortDirection.Ascending

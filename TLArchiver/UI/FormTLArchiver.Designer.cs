@@ -164,7 +164,6 @@
             this.m_dgvDialogs.Name = "m_dgvDialogs";
             this.m_dgvDialogs.Size = new System.Drawing.Size(737, 543);
             this.m_dgvDialogs.TabIndex = 11;
-            this.m_dgvDialogs.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.m_dgvDialogs_DataBindingComplete);
             // 
             // m_gbDialogs
             // 

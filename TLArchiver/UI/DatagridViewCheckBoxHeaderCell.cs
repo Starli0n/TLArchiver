@@ -82,12 +82,12 @@ namespace TLArchiver.UI
         protected override void OnMouseClick(DataGridViewCellMouseEventArgs e)
         {
             Point p = new Point(e.X + _cellLocation.X, e.Y + _cellLocation.Y);
-            IsDirty = false;
             if (p.X >= checkBoxLocation.X && p.X <=
                 checkBoxLocation.X + checkBoxSize.Width
             && p.Y >= checkBoxLocation.Y && p.Y <=
                 checkBoxLocation.Y + checkBoxSize.Height)
             {
+                IsDirty = false;
                 _checked = !_checked;
                 if (OnCheckBoxClicked != null)
                 {
