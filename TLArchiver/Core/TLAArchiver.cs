@@ -247,7 +247,7 @@ namespace TLArchiver.Core
 
         private string Prefix
         {
-            get { return m_sPrefix;  }
+            get { return m_sPrefix; }
             set
             {
                 if (m_sPrefix != value)
@@ -270,7 +270,5 @@ namespace TLArchiver.Core
         {
             return m_config;
         }
-
-        public string ExportDirectory { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using TLArchiver.Core;
 using TLArchiver.Entities;
 using TLSharp.Core.Network;
@@ -81,6 +82,10 @@ namespace TLArchiver.UI
             // CheckBox event handler walkaround https://stackoverflow.com/questions/11843488/datagridview-checkbox-event
             m_dgvDialogs.CellContentClick += new DataGridViewCellEventHandler(m_dgvDialogs_CellContentClick);
             m_dgvDialogs.CellValueChanged += new DataGridViewCellEventHandler(m_dgvDialogs_CellValueChanged);
+            // Checkbox header
+            m_cbHeader = new DatagridViewCheckBoxHeaderCell();
+            m_cbHeader.Value = "";
+            m_cbHeader.OnCheckBoxClicked += new CheckBoxClickedHandler(m_cbHeader_CheckBoxClicked);
         }
 
         private bool Connected
@@ -106,9 +111,6 @@ namespace TLArchiver.UI
         private void LoadGrid()
         {
             // Remove the text header of the first column and replace it by a "(Un)Select All" checkbox
-            m_cbHeader = new DatagridViewCheckBoxHeaderCell();
-            m_cbHeader.Value = "";
-            m_cbHeader.OnCheckBoxClicked += new CheckBoxClickedHandler(m_cbHeader_CheckBoxClicked);
             m_dgvDialogs.Columns["Selected"].HeaderCell = m_cbHeader;
             m_dgvDialogs.ClearSelection();
 
@@ -238,6 +240,7 @@ namespace TLArchiver.UI
         {
             m_cbDialogsAll.Checked = true;
             m_cbContentAll.Checked = true;
+            m_cbExportAll.Checked = true;
 
             Connected = m_archiver.Connect();
             if (!Connected)
@@ -269,6 +272,7 @@ namespace TLArchiver.UI
                 m_cbChannels.Checked = m_cbDialogsAll.Checked;
                 m_cbChats.Checked = m_cbDialogsAll.Checked;
                 m_cbUsers.Checked = m_cbDialogsAll.Checked;
+                SetExportStatus();
             }
             finally
             {
@@ -290,6 +294,7 @@ namespace TLArchiver.UI
                     m_cbDialogsAll.CheckState = CheckState.Unchecked;
                 else
                     m_cbDialogsAll.CheckState = CheckState.Indeterminate;
+                SetExportStatus();
             }
             finally
             {
@@ -310,6 +315,7 @@ namespace TLArchiver.UI
                 m_cbPhotos.Checked = m_cbContentAll.Checked;
                 m_cbVideos.Checked = m_cbContentAll.Checked;
                 m_cbVoiceMessages.Checked = m_cbContentAll.Checked;
+                SetExportStatus();
             }
             finally
             {
@@ -330,6 +336,7 @@ namespace TLArchiver.UI
                     m_cbContentAll.CheckState = CheckState.Unchecked;
                 else
                     m_cbContentAll.CheckState = CheckState.Indeterminate;
+                SetExportStatus();
             }
             finally
             {
@@ -346,6 +353,7 @@ namespace TLArchiver.UI
             {
                 m_cbText.Checked = m_cbExportAll.Checked;
                 m_cbHtml.Checked = m_cbExportAll.Checked;
+                SetExportStatus();
             }
             finally
             {
@@ -366,28 +374,12 @@ namespace TLArchiver.UI
                     m_cbExportAll.CheckState = CheckState.Unchecked;
                 else
                     m_cbExportAll.CheckState = CheckState.Indeterminate;
+                SetExportStatus();
             }
             finally
             {
                 m_bIsExportCheckedChanging = false;
             }
-        }
-
-        private void m_bExport_Click(object sender, System.EventArgs e)
-        {
-            using (FormExport export = new FormExport())
-                export.ShowDialog(this);
-            //List<string> contacts = m_tlArchiveMedia.GetContacts();
-            //List<string> dialogs = m_tlArchiveMedia.GetUserDialogs();
-
-            /*m_tlArchiveMedia.ExportDirectory = m_config.ExportDirectory;
-#if (!DEBUG)
-            m_tlArchiveMedia.ExportDirectory += DateTime.Now.ToString("_yyyy_MM_dd_HH_mm_ss");
-#endif
-            Directory.CreateDirectory(m_tlArchiveMedia.ExportDirectory);
-            m_tlArchiveMedia.Export(
-                m_cbFromDate.Checked ? m_dtpFrom.Value : DateTime.MinValue,
-                m_cbToDate.Checked ? m_dtpTo.Value : DateTime.MaxValue);*/
         }
 
         public void m_cbHeader_CheckBoxClicked(bool bState)
@@ -399,19 +391,21 @@ namespace TLArchiver.UI
             m_dgvDialogs.Update();
             m_dgvDialogs.Refresh();
             m_bExport.Select(); // Set the focus on Export button
+            SetExportStatus();
             m_bIsHeaderCheckBoxClicked = true;
         }
 
         private void m_dgvDialogs_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == 0) // Only for selected column
+            if (e.ColumnIndex == 0) // Only for "Selected" column
                 m_dgvDialogs.CommitEdit(DataGridViewDataErrorContexts.Commit);
         }
 
         private void m_dgvDialogs_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            m_cbHeader.IsDirty = true; // Mix between selected and unselected
+            m_cbHeader.SetDirty(); // Mix between selected and unselected
             m_dgvDialogs.Invalidate(); // Trigger the Paint() event
+            SetExportStatus();
         }
 
         private void m_dgvDialogs_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -427,6 +421,23 @@ namespace TLArchiver.UI
             UpdateView();
             m_direction = m_direction == ListSortDirection.Ascending
                 ? ListSortDirection.Descending : ListSortDirection.Ascending;
+        }
+
+        private void SetExportStatus()
+        {
+            m_bExport.Enabled = m_cbDialogsAll.CheckState != CheckState.Unchecked
+                && m_cbContentAll.CheckState != CheckState.Unchecked
+                && m_cbExportAll.CheckState != CheckState.Unchecked
+                && m_cbHeader.CheckState != CheckBoxState.UncheckedNormal;
+        }
+
+        private void m_bExport_Click(object sender, System.EventArgs e)
+        {
+            using (FormExport export = new FormExport())
+                export.ShowDialog(this);
+            /*m_tlArchiveMedia.Export(
+                m_cbFromDate.Checked ? m_dtpFrom.Value : DateTime.MinValue,
+                m_cbToDate.Checked ? m_dtpTo.Value : DateTime.MaxValue);*/
         }
     }
 }

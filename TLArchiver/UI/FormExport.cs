@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows.Forms;
 using TLArchiver.Core;
 using TLArchiver.Entities;
+using TLArchiver.Exporter;
 
 namespace TLArchiver.UI
 {
@@ -37,6 +38,10 @@ namespace TLArchiver.UI
 
             // Create the worker thread object. This does not start the thread.
             m_exporter = new TLAExporter(archiver.GetConfig(), archiver, dialogList);
+            if (arg.ExportText)
+                m_exporter.AddExporter(new TxtExporter());
+            if (arg.ExportHtml)
+                m_exporter.AddExporter(new HtmlExporter());
             m_exporterThread = new Thread(m_exporter.Start);
             m_exporterThread.Name = "Export Thread";
 

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using TeleSharp.TL;
 using TLArchiver.Entities;
+using TLArchiver.Exporter;
 
 namespace TLArchiver.Core
 {
@@ -21,13 +23,26 @@ namespace TLArchiver.Core
         Config m_config;
         TLAArchiver m_archiver;
         ICollection<TLADialog> m_dialogs;
+        List<IExporter> m_exporters;
 
         public TLAExporter(Config config, TLAArchiver archiver, ICollection<TLADialog> dialogs)
         {
             m_config = config;
             m_archiver = archiver;
             m_dialogs = dialogs;
+            m_exporters = new List<IExporter>();
+
             BeginProcessingDialogs = null;
+            BeginProcessingDialog = null;
+            EndProcessingMessage = null;
+            EndProcessingDialog = null;
+            EndProcessingDialogs = null;
+
+            ExportDirectory = m_config.ExportDirectory;
+#if (!DEBUG)
+            ExportDirectory += DateTime.Now.ToString("_yyyy_MM_dd_HH_mm_ss");
+#endif
+            Directory.CreateDirectory(ExportDirectory);
         }
 
         public void Start()
@@ -48,18 +63,13 @@ namespace TLArchiver.Core
                     if (m_bAbort)
                         return;
 
-                    var message = absMessage as TLMessage;
-                    if (message != null)
-                    {
-                        // TODO: Process a message
-                    }
+                    if (absMessage is TLMessage)
+                        ExportMessage((TLMessage)absMessage);
+                    else if (absMessage is TLMessageService)
+                        ExportMessageService((TLMessageService)absMessage);
                     else
-                    {
-                        var messageService = absMessage as TLMessageService;
-                        if (messageService == null)
-                            throw new TLCoreException("The message is not a TLMessage or a TLMessageService");
-                        // TODO: Process a message service
-                    }
+                        throw new TLCoreException("The message is not a TLMessage or a TLMessageService");
+
                     if (EndProcessingMessage != null)
                         EndProcessingMessage();
                 }
@@ -74,5 +84,25 @@ namespace TLArchiver.Core
         {
             m_bAbort = true;
         }
+
+        public void AddExporter(IExporter exporter)
+        {
+            exporter.SetDirectory(ExportDirectory);
+            m_exporters.Add(exporter);
+        }
+
+        public void ExportMessage(TLMessage message)
+        {
+            foreach(IExporter exporter in m_exporters)
+                exporter.ExportMessage(message);
+        }
+
+        public void ExportMessageService(TLMessageService message)
+        {
+            foreach (IExporter exporter in m_exporters)
+                exporter.ExportMessageService(message);
+        }
+
+        public string ExportDirectory { get; set; }
     }
 }

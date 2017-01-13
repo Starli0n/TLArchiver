@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 
 namespace TLArchiver.UI
 {
@@ -27,17 +28,24 @@ namespace TLArchiver.UI
     {
         Point checkBoxLocation;
         Size checkBoxSize;
-        bool _checked = false;
         Point _cellLocation = new Point();
-        System.Windows.Forms.VisualStyles.CheckBoxState _cbState =
-            System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal;
         public event CheckBoxClickedHandler OnCheckBoxClicked;
 
-        public bool IsDirty { get; set; }
+        public bool Checked { get; private set; }
+        public CheckBoxState CheckState { get; private set; }
+        public bool IsDirty { get; private set; }
 
         public DatagridViewCheckBoxHeaderCell()
         {
+            Checked = false;
+            CheckState = CheckBoxState.UncheckedNormal;
             IsDirty = false;
+        }
+
+        public void SetDirty()
+        {
+            IsDirty = true;
+            CheckState = CheckBoxState.MixedNormal;
         }
 
         protected override void Paint(System.Drawing.Graphics graphics,
@@ -67,16 +75,13 @@ namespace TLArchiver.UI
             checkBoxLocation = p;
             checkBoxSize = s;
             if (IsDirty)
-                _cbState = System.Windows.Forms.VisualStyles.
-                    CheckBoxState.MixedNormal;
-            else if (_checked)
-                _cbState = System.Windows.Forms.VisualStyles.
-                    CheckBoxState.CheckedNormal;
+                CheckState = CheckBoxState.MixedNormal;
+            else if (Checked)
+                CheckState = CheckBoxState.CheckedNormal;
             else
-                _cbState = System.Windows.Forms.VisualStyles.
-                    CheckBoxState.UncheckedNormal;
+                CheckState = CheckBoxState.UncheckedNormal;
             CheckBoxRenderer.DrawCheckBox
-            (graphics, checkBoxLocation, _cbState);
+            (graphics, checkBoxLocation, CheckState);
         }
 
         protected override void OnMouseClick(DataGridViewCellMouseEventArgs e)
@@ -88,10 +93,10 @@ namespace TLArchiver.UI
                 checkBoxLocation.Y + checkBoxSize.Height)
             {
                 IsDirty = false;
-                _checked = !_checked;
+                Checked = !Checked;
                 if (OnCheckBoxClicked != null)
                 {
-                    OnCheckBoxClicked(_checked);
+                    OnCheckBoxClicked(Checked);
                     this.DataGridView.InvalidateCell(this);
                 }
 
