@@ -21,5 +21,7 @@ namespace TLArchiver.Exporter
         void EndDialog(TLADialog dialog);
 
         void EndDialogs(ICollection<TLADialog> m_dialogs);
+
+        void Abort();
     }
 }

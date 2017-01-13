@@ -7,33 +7,38 @@ using TLArchiver.Exporter;
 
 namespace TLArchiver.Core
 {
-    delegate void BeginProcessingDialogsDel(ICollection<TLADialog> dialogs);
-    delegate void BeginProcessingDialogDel(TLADialog dialog);
+    delegate void DialogsHandler(ICollection<TLADialog> dialogs);
+    delegate void DialogHandler(TLADialog dialog);
+    delegate void AbsMessageHandler(TLAbsMessage dialog);
+    delegate void MessageHandler(TLMessage dialog);
+    delegate void MessageServiceHandler(TLMessageService dialog);
 
     class TLAExporter
     {
         private volatile bool m_bAbort = false;
 
-        public BeginProcessingDialogsDel OnBegingDialogs;
-        public BeginProcessingDialogDel OnBegingDialog;
-        public Action OnEndMessage;
-        public Action OnEndDialog;
-        public Action OnEndDialogs;
+        private event DialogsHandler OnBeginDialogs;
+        private event DialogHandler OnBeginDialog;
+        private event AbsMessageHandler OnBeginMessage;
+        private event MessageHandler OnExportMessage;
+        private event MessageServiceHandler OnExportMessageService;
+        private event AbsMessageHandler OnEndMessage;
+        private event DialogHandler OnEndDialog;
+        private event DialogsHandler OnEndDialogs;
+        private event Action OnAbort;
 
         private Config m_config;
         private TLAArchiver m_archiver;
         private ICollection<TLADialog> m_dialogs;
-        private List<IExporter> m_exporters;
 
         public TLAExporter(Config config, TLAArchiver archiver, ICollection<TLADialog> dialogs)
         {
             m_config = config;
             m_archiver = archiver;
             m_dialogs = dialogs;
-            m_exporters = new List<IExporter>();
 
-            OnBegingDialogs = null;
-            OnBegingDialog = null;
+            OnBeginDialogs = null;
+            OnBeginDialog = null;
             OnEndMessage = null;
             OnEndDialog = null;
             OnEndDialogs = null;
@@ -47,82 +52,44 @@ namespace TLArchiver.Core
 
         public void Start()
         {
-            BegingDialogs(m_dialogs);
+            if (OnBeginDialogs != null)
+                OnBeginDialogs(m_dialogs);
+
             foreach (TLADialog dialog in m_dialogs)
             {
-                BegingDialog(dialog);
+                if (!m_config.CountMessagesAtLaunch)
+                    dialog.Total = m_archiver.GetTotalMessages(dialog);
+
+                if (OnBeginDialog != null)
+                    OnBeginDialog(dialog);
+
                 foreach (TLAbsMessage absMessage in m_archiver.GetMessages(dialog))
                 {
                     if (m_bAbort)
+                    {
+                        if (OnAbort != null)
+                            OnAbort();
                         return;
+                    }
 
-                    BegingMessage(absMessage);
+                    if (OnBeginMessage != null)
+                        OnBeginMessage(absMessage);
 
-                    if (absMessage is TLMessage)
-                        ExportMessage((TLMessage)absMessage);
-                    else if (absMessage is TLMessageService)
-                        ExportMessageService((TLMessageService)absMessage);
+                    if (absMessage is TLMessage && OnExportMessage != null)
+                        OnExportMessage((TLMessage)absMessage);
+                    else if (absMessage is TLMessageService && OnExportMessageService != null)
+                        OnExportMessageService((TLMessageService)absMessage);
                     else
                         throw new TLCoreException("The message is not a TLMessage or a TLMessageService");
 
-                    EndMessage(absMessage);
+                    if (OnEndMessage != null)
+                        OnEndMessage(absMessage);
                 }
-                EndDialog(dialog);
+                if (OnEndDialog != null)
+                    OnEndDialog(dialog);
             }
-            EndDialogs(m_dialogs);
-        }
-
-        private void BegingDialogs(ICollection<TLADialog> dialogs)
-        {
-            if (OnBegingDialogs != null)
-                OnBegingDialogs(dialogs);
-        }
-
-        private void BegingDialog(TLADialog dialog)
-        {
-            if (!m_config.CountMessagesAtLaunch)
-                dialog.Total = m_archiver.GetTotalMessages(dialog);
-
-            if (OnBegingDialog != null)
-                OnBegingDialog(dialog);
-
-            foreach (IExporter exporter in m_exporters)
-                exporter.BeginDialog(dialog);
-        }
-
-        private void BegingMessage(TLAbsMessage absMessage)
-        {
-
-        }
-
-        public void ExportMessage(TLMessage message)
-        {
-            foreach (IExporter exporter in m_exporters)
-                exporter.ExportMessage(message);
-        }
-
-        public void ExportMessageService(TLMessageService message)
-        {
-            foreach (IExporter exporter in m_exporters)
-                exporter.ExportMessageService(message);
-        }
-
-        private void EndMessage(TLAbsMessage absMessage)
-        {
-            if (OnEndMessage != null)
-                OnEndMessage();
-        }
-
-        private void EndDialog(TLADialog dialog)
-        {
-            if (OnEndDialog != null)
-                OnEndDialog();
-        }
-
-        private void EndDialogs(ICollection<TLADialog> m_dialogs)
-        {
             if (OnEndDialogs != null)
-                OnEndDialogs();
+                OnEndDialogs(m_dialogs);
         }
 
         public void RequestStop()
@@ -132,7 +99,15 @@ namespace TLArchiver.Core
 
         public void AddExporter(IExporter exporter)
         {
-            m_exporters.Add(exporter);
+            OnBeginDialogs += new DialogsHandler(exporter.BeginDialogs);
+            OnBeginDialog += new DialogHandler(exporter.BeginDialog);
+            OnBeginMessage += new AbsMessageHandler(exporter.BeginMessage);
+            OnExportMessage += new MessageHandler(exporter.ExportMessage);
+            OnExportMessageService += new MessageServiceHandler(exporter.ExportMessageService);
+            OnEndMessage += new AbsMessageHandler(exporter.EndMessage);
+            OnEndDialog += new DialogHandler(exporter.EndDialog);
+            OnEndDialogs += new DialogsHandler(exporter.EndDialogs);
+            OnAbort += new Action(exporter.Abort);
         }
 
         public string ExportDirectory { get; private set; }

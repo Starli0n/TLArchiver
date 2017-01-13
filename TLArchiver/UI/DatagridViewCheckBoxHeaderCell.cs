@@ -46,6 +46,7 @@ namespace TLArchiver.UI
         {
             IsDirty = true;
             CheckState = CheckBoxState.MixedNormal;
+            DataGridView.InvalidateCell(this); // Trigger the Paint() event
         }
 
         protected override void Paint(System.Drawing.Graphics graphics,
@@ -97,7 +98,7 @@ namespace TLArchiver.UI
                 if (OnCheckBoxClicked != null)
                 {
                     OnCheckBoxClicked(Checked);
-                    this.DataGridView.InvalidateCell(this);
+                    DataGridView.InvalidateCell(this);
                 }
 
             }

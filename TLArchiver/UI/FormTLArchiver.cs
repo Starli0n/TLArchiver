@@ -390,7 +390,6 @@ namespace TLArchiver.UI
         private void m_dgvDialogs_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             m_cbHeader.SetDirty(); // Mix between selected and unselected
-            m_dgvDialogs.Invalidate(); // Trigger the Paint() event
             SetExportStatus();
         }
 

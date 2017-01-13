@@ -26,7 +26,7 @@ namespace TLArchiver.Exporter
             Directory.CreateDirectory(m_sExporterDirectory);
         }
 
-        public void BeginDialogs(ICollection<TLADialog> dialogs)
+        public virtual void BeginDialogs(ICollection<TLADialog> dialogs)
         {
 
         }
@@ -68,18 +68,28 @@ namespace TLArchiver.Exporter
 
         public virtual void EndDialog(TLADialog dialog)
         {
-            if (m_config.ExportMessages && m_file != null)
+            CloseFile();
+        }
+
+        public virtual void EndDialogs(ICollection<TLADialog> m_dialogs)
+        {
+
+        }
+
+        public virtual void Abort()
+        {
+            CloseFile();
+        }
+
+        private void CloseFile()
+        {
+            if (m_file != null)
             {
                 m_file.Flush();
                 m_file.Close();
                 m_file.Dispose();
                 m_file = null;
             }
-        }
-
-        public virtual void EndDialogs(ICollection<TLADialog> m_dialogs)
-        {
-
         }
     }
 }
