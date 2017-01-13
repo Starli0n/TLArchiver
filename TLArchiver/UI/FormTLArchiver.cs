@@ -30,20 +30,6 @@ namespace TLArchiver.UI
         public TLAArchiver Archiver { get { return m_archiver; } }
         public ICollection<TLADialog> Dialogs { get { return m_dialogView; } }
 
-        public bool IsFromDate { get { return m_cbFromDate.Checked; } }
-        public bool IsToDate { get { return m_cbToDate.Checked; } }
-        public DateTime FromDate { get { return m_dtpFrom.Value; } }
-        public DateTime ToDate { get { return m_dtpTo.Value; } }
-
-        public bool ExportMessages { get { return m_cbMessages.Checked; } }
-        public bool ExportFiles { get { return m_cbFiles.Checked; } }
-        public bool ExportPhotos { get { return m_cbPhotos.Checked; } }
-        public bool ExportVideos { get { return m_cbVideos.Checked; } }
-        public bool ExportVoiceMessages { get { return m_cbVoiceMessages.Checked; } }
-
-        public bool ExportText { get { return m_cbText.Checked; } }
-        public bool ExportHtml { get { return m_cbHtml.Checked; } }
-
         public FormTLArchiver()
         {
             InitializeComponent();
@@ -67,7 +53,7 @@ namespace TLArchiver.UI
             if (m_config.CountMessagesAtLaunch)
             {
                 // Fill the last column to match the resize of the form
-                m_dgvDialogs.Columns["Total"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;                
+                m_dgvDialogs.Columns["Total"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
             else
             {
@@ -433,11 +419,34 @@ namespace TLArchiver.UI
 
         private void m_bExport_Click(object sender, System.EventArgs e)
         {
+            UpdateConfig();
             using (FormExport export = new FormExport())
                 export.ShowDialog(this);
             /*m_tlArchiveMedia.Export(
                 m_cbFromDate.Checked ? m_dtpFrom.Value : DateTime.MinValue,
                 m_cbToDate.Checked ? m_dtpTo.Value : DateTime.MaxValue);*/
+        }
+
+        private void UpdateConfig()
+        {
+            m_config.IsFromDate = m_cbFromDate.Checked;
+            m_config.IsToDate = m_cbToDate.Checked;
+            m_config.FromDate = m_dtpFrom.Value;
+            m_config.ToDate = m_dtpTo.Value;
+
+            m_config.ExportMessages = m_cbMessages.Checked;
+            m_config.ExportFiles = m_cbFiles.Checked;
+            m_config.ExportPhotos = m_cbPhotos.Checked;
+            m_config.ExportVideos = m_cbVideos.Checked;
+            m_config.ExportVoiceMessages = m_cbVoiceMessages.Checked;
+
+            m_config.ExportText = m_cbText.Checked;
+            m_config.ExportHtml = m_cbHtml.Checked;
+        }
+
+        public Config GetConfig()
+        {
+            return m_config;
         }
     }
 }

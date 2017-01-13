@@ -7,6 +7,7 @@ namespace TLArchiver.Core
 
     public class Config
     {
+        // Data from app.config
         public string ApiHash { get; set; }
         public int ApiId { get; set; }
         public string SignInPhoneNumberCode { get; set; }
@@ -28,13 +29,28 @@ namespace TLArchiver.Core
         public int MessagesReadLimit { get; set; }
         public bool CountMessagesAtLaunch { get; set; }
 
+        // Data from the app
+        public bool IsFromDate { get; set; }
+        public bool IsToDate { get; set; }
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
+
+        public bool ExportMessages { get; set; }
+        public bool ExportFiles { get; set; }
+        public bool ExportPhotos { get; set; }
+        public bool ExportVideos { get; set; }
+        public bool ExportVoiceMessages { get; set; }
+
+        public bool ExportText { get; set; }
+        public bool ExportHtml { get; set; }
+
         static public void Load(Config config)
         {
             config.ApiHash = ConfigurationManager.AppSettings["ApiHash"];
             config.ApiId = Int32.Parse(ConfigurationManager.AppSettings["ApiId"]);
             //config.NumberToAuthenticate = ConfigurationManager.AppSettings["NumberToAuthenticate"];
             config.SignInPhoneNumberCode = ConfigurationManager.AppSettings["SignInPhoneNumberCode"];
-            config.SignInPhoneNumber = ConfigurationManager.AppSettings["SignInPhoneNumber"];            
+            config.SignInPhoneNumber = ConfigurationManager.AppSettings["SignInPhoneNumber"];
             config.CodeToAuthenticate = ConfigurationManager.AppSettings["CodeToAuthenticate"];
             config.NotRegisteredNumberToSignUp = ConfigurationManager.AppSettings["NotRegisteredNumberToSignUp"];
             config.NumberToSendMessage = ConfigurationManager.AppSettings["NumberToSendMessage"];

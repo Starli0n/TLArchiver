@@ -265,10 +265,5 @@ namespace TLArchiver.Core
             else
                 return c_iInitialIndex;
         }
-
-        public Config GetConfig()
-        {
-            return m_config;
-        }
     }
 }

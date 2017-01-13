@@ -30,6 +30,7 @@ namespace TLArchiver.UI
             FormTLArchiver arg = this.Owner as FormTLArchiver;
             if (arg == null)
                 throw new TLUIException("Owner is not a FormTLArchiveMedia");
+            Config config = arg.GetConfig();
             TLAArchiver archiver = arg.Archiver;
             ICollection<TLADialog> dialogList = arg.Dialogs.Where(d => d.Selected).ToList(); // Process selected dialogs only
 
@@ -37,10 +38,10 @@ namespace TLArchiver.UI
             // https://msdn.microsoft.com/en-us/library/7a2f3ay4(v=vs.100).aspx
 
             // Create the worker thread object. This does not start the thread.
-            m_exporter = new TLAExporter(archiver.GetConfig(), archiver, dialogList);
-            if (arg.ExportText)
+            m_exporter = new TLAExporter(config, archiver, dialogList);
+            if (config.ExportText)
                 m_exporter.AddExporter(new TxtExporter());
-            if (arg.ExportHtml)
+            if (config.ExportHtml)
                 m_exporter.AddExporter(new HtmlExporter());
             m_exporterThread = new Thread(m_exporter.Start);
             m_exporterThread.Name = "Export Thread";
@@ -57,7 +58,7 @@ namespace TLArchiver.UI
                 }),
                 new object[] { dialogs });
             };
-            
+
             m_exporter.BeginProcessingDialog = dialog =>
             {
                 BeginInvoke(new BeginProcessingDialogDel(d =>
