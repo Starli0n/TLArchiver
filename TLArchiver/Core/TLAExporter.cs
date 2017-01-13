@@ -14,16 +14,16 @@ namespace TLArchiver.Core
     {
         private volatile bool m_bAbort = false;
 
-        public BeginProcessingDialogsDel BeginProcessingDialogs;
-        public BeginProcessingDialogDel BeginProcessingDialog;
-        public Action EndProcessingMessage;
-        public Action EndProcessingDialog;
-        public Action EndProcessingDialogs;
+        public BeginProcessingDialogsDel OnBegingDialogs;
+        public BeginProcessingDialogDel OnBegingDialog;
+        public Action OnEndMessage;
+        public Action OnEndDialog;
+        public Action OnEndDialogs;
 
-        Config m_config;
-        TLAArchiver m_archiver;
-        ICollection<TLADialog> m_dialogs;
-        List<IExporter> m_exporters;
+        private Config m_config;
+        private TLAArchiver m_archiver;
+        private ICollection<TLADialog> m_dialogs;
+        private List<IExporter> m_exporters;
 
         public TLAExporter(Config config, TLAArchiver archiver, ICollection<TLADialog> dialogs)
         {
@@ -32,36 +32,31 @@ namespace TLArchiver.Core
             m_dialogs = dialogs;
             m_exporters = new List<IExporter>();
 
-            BeginProcessingDialogs = null;
-            BeginProcessingDialog = null;
-            EndProcessingMessage = null;
-            EndProcessingDialog = null;
-            EndProcessingDialogs = null;
+            OnBegingDialogs = null;
+            OnBegingDialog = null;
+            OnEndMessage = null;
+            OnEndDialog = null;
+            OnEndDialogs = null;
 
             ExportDirectory = m_config.ExportDirectory;
 #if (!DEBUG)
-            ExportDirectory += DateTime.Now.ToString("_yyyy_MM_dd_HH_mm_ss");
+            m_sExportDirectory += DateTime.Now.ToString("_yyyy_MM_dd_HH_mm_ss");
 #endif
             Directory.CreateDirectory(ExportDirectory);
         }
 
         public void Start()
         {
-            if (BeginProcessingDialogs != null)
-                BeginProcessingDialogs(m_dialogs);
-
+            BegingDialogs(m_dialogs);
             foreach (TLADialog dialog in m_dialogs)
             {
-                if (!m_config.CountMessagesAtLaunch)
-                    dialog.Total = m_archiver.GetTotalMessages(dialog);
-
-                if (BeginProcessingDialog != null)
-                    BeginProcessingDialog(dialog);
-
+                BegingDialog(dialog);
                 foreach (TLAbsMessage absMessage in m_archiver.GetMessages(dialog))
                 {
                     if (m_bAbort)
                         return;
+
+                    BegingMessage(absMessage);
 
                     if (absMessage is TLMessage)
                         ExportMessage((TLMessage)absMessage);
@@ -70,30 +65,39 @@ namespace TLArchiver.Core
                     else
                         throw new TLCoreException("The message is not a TLMessage or a TLMessageService");
 
-                    if (EndProcessingMessage != null)
-                        EndProcessingMessage();
+                    EndMessage(absMessage);
                 }
-                if (EndProcessingDialog != null)
-                    EndProcessingDialog();
+                EndDialog(dialog);
             }
-            if (EndProcessingDialogs != null)
-                EndProcessingDialogs();
+            EndDialogs(m_dialogs);
         }
 
-        public void RequestStop()
+        private void BegingDialogs(ICollection<TLADialog> dialogs)
         {
-            m_bAbort = true;
+            if (OnBegingDialogs != null)
+                OnBegingDialogs(dialogs);
         }
 
-        public void AddExporter(IExporter exporter)
+        private void BegingDialog(TLADialog dialog)
         {
-            exporter.SetDirectory(ExportDirectory);
-            m_exporters.Add(exporter);
+            if (!m_config.CountMessagesAtLaunch)
+                dialog.Total = m_archiver.GetTotalMessages(dialog);
+
+            if (OnBegingDialog != null)
+                OnBegingDialog(dialog);
+
+            foreach (IExporter exporter in m_exporters)
+                exporter.BeginDialog(dialog);
+        }
+
+        private void BegingMessage(TLAbsMessage absMessage)
+        {
+
         }
 
         public void ExportMessage(TLMessage message)
         {
-            foreach(IExporter exporter in m_exporters)
+            foreach (IExporter exporter in m_exporters)
                 exporter.ExportMessage(message);
         }
 
@@ -103,6 +107,34 @@ namespace TLArchiver.Core
                 exporter.ExportMessageService(message);
         }
 
-        public string ExportDirectory { get; set; }
+        private void EndMessage(TLAbsMessage absMessage)
+        {
+            if (OnEndMessage != null)
+                OnEndMessage();
+        }
+
+        private void EndDialog(TLADialog dialog)
+        {
+            if (OnEndDialog != null)
+                OnEndDialog();
+        }
+
+        private void EndDialogs(ICollection<TLADialog> m_dialogs)
+        {
+            if (OnEndDialogs != null)
+                OnEndDialogs();
+        }
+
+        public void RequestStop()
+        {
+            m_bAbort = true;
+        }
+
+        public void AddExporter(IExporter exporter)
+        {
+            m_exporters.Add(exporter);
+        }
+
+        public string ExportDirectory { get; private set; }
     }
 }

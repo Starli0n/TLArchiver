@@ -40,9 +40,9 @@ namespace TLArchiver.UI
             // Create the worker thread object. This does not start the thread.
             m_exporter = new TLAExporter(config, archiver, dialogList);
             if (config.ExportText)
-                m_exporter.AddExporter(new TxtExporter());
+                m_exporter.AddExporter(new TxtExporter(config, m_exporter.ExportDirectory));
             if (config.ExportHtml)
-                m_exporter.AddExporter(new HtmlExporter());
+                m_exporter.AddExporter(new HtmlExporter(config, m_exporter.ExportDirectory));
             m_exporterThread = new Thread(m_exporter.Start);
             m_exporterThread.Name = "Export Thread";
 
@@ -50,7 +50,7 @@ namespace TLArchiver.UI
             // Use delegate for a loose coupling
             // Since the worker and the UI are not in the same thread use the 'Invoke' template
             // https://msdn.microsoft.com/en-us/library/ms171728(v=vs.110).aspx
-            m_exporter.BeginProcessingDialogs = dialogs =>
+            m_exporter.OnBegingDialogs = dialogs =>
             {
                 BeginInvoke(new BeginProcessingDialogsDel(d =>
                 {
@@ -59,7 +59,7 @@ namespace TLArchiver.UI
                 new object[] { dialogs });
             };
 
-            m_exporter.BeginProcessingDialog = dialog =>
+            m_exporter.OnBegingDialog = dialog =>
             {
                 BeginInvoke(new BeginProcessingDialogDel(d =>
                 {
@@ -71,7 +71,7 @@ namespace TLArchiver.UI
                 new object[] { dialog });
             };
 
-            m_exporter.EndProcessingMessage = () =>
+            m_exporter.OnEndMessage = () =>
             {
                 BeginInvoke((MethodInvoker)delegate
                 {
@@ -80,7 +80,7 @@ namespace TLArchiver.UI
                 });
             };
 
-            m_exporter.EndProcessingDialog = () =>
+            m_exporter.OnEndDialog = () =>
             {
                 BeginInvoke((MethodInvoker)delegate
                 {
@@ -88,7 +88,7 @@ namespace TLArchiver.UI
                 });
             };
 
-            m_exporter.EndProcessingDialogs = () =>
+            m_exporter.OnEndDialogs = () =>
             {
                 BeginInvoke((MethodInvoker)delegate
                 {

@@ -56,6 +56,7 @@
     <Compile Include="Core\TLAExporter.cs" />
     <Compile Include="Entities\TLADialog.cs" />
     <Compile Include="Entities\TLADialogType.cs" />
+    <Compile Include="Exporter\FileExporter.cs" />
     <Compile Include="Exporter\HtmlExporter.cs" />
     <Compile Include="Exporter\IExporter.cs" />
     <Compile Include="Exporter\TxtExporter.cs" />

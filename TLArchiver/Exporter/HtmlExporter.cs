@@ -1,32 +1,17 @@
-﻿using System.IO;
-using TeleSharp.TL;
+﻿using TLArchiver.Core;
 
 namespace TLArchiver.Exporter
 {
-    public class HtmlExporter : IExporter
+    public class HtmlExporter : FileExporter, IExporter
     {
-        private static readonly string c_sSubDirectory = "Html";
-        private string m_sExportDirectory;
+        private static readonly string c_sExporterDirectory = "Html";
+        private static readonly string c_sMessagesFile = "Messages.html";
 
-        public HtmlExporter()
+        public HtmlExporter(Config config, string sDirectory) : base(config)
         {
-
-        }
-
-        public void SetDirectory(string directory)
-        {
-            m_sExportDirectory = Path.Combine(directory, c_sSubDirectory);
-            Directory.CreateDirectory(m_sExportDirectory);
-        }
-
-        public void ExportMessage(TLMessage message)
-        {
-
-        }
-
-        public void ExportMessageService(TLMessageService message)
-        {
-
+            m_sExporterDirectory = c_sExporterDirectory;
+            m_sMessagesFile = c_sMessagesFile;
+            Initialize(sDirectory);
         }
     }
 }
