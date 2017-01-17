@@ -22,10 +22,50 @@ namespace TLArchiver.Exporter
 
         public override void ExportMessage(TLMessage message)
         {
-            base.ExportMessage(message);
-
+            m_sAuthor = GetAuthor(message.from_id);
             m_sHeader = String.Format(c_sMessageHeader, m_sAuthor, Date.TLConvertTxt(message.date));
             Prepend(message.message);
+            Prepend(m_sHeader);
+        }
+
+        public override void ExportMessageService(TLMessageService message)
+        {
+            m_sAuthor = GetAuthor(message.from_id);
+            m_sHeader = String.Format(c_sMessageHeader, m_sAuthor, Date.TLConvertTxt(message.date));
+
+            string sMessage = "";
+            if (message.action.GetType() == typeof(TLMessageActionChannelCreate))
+                sMessage = "ChannelCreate";
+            else if (message.action.GetType() == typeof(TLMessageActionChannelMigrateFrom))
+                sMessage = "ChannelMigrateFrom";
+            else if (message.action.GetType() == typeof(TLMessageActionChatAddUser))
+                sMessage = "ChatAddUser";
+            else if (message.action.GetType() == typeof(TLMessageActionChatCreate))
+                sMessage = "ChatCreate";
+            else if (message.action.GetType() == typeof(TLMessageActionChatDeletePhoto))
+                sMessage = "ChatDeletePhoto";
+            else if (message.action.GetType() == typeof(TLMessageActionChatDeleteUser))
+                sMessage = "ChatDeleteUser";
+            else if (message.action.GetType() == typeof(TLMessageActionChatEditPhoto))
+                sMessage = "ChatEditPhoto";
+            else if (message.action.GetType() == typeof(TLMessageActionChatEditTitle))
+                sMessage = "ChatEditTitle";
+            else if (message.action.GetType() == typeof(TLMessageActionChatJoinedByLink))
+                sMessage = "ChatJoinedByLink";
+            else if (message.action.GetType() == typeof(TLMessageActionChatMigrateTo))
+                sMessage = "ChatMigrateTo";
+            else if (message.action.GetType() == typeof(TLMessageActionEmpty))
+                sMessage = "Empty";
+            else if (message.action.GetType() == typeof(TLMessageActionGameScore))
+                sMessage = "GameScore";
+            else if (message.action.GetType() == typeof(TLMessageActionHistoryClear))
+                sMessage = "HistoryClear";
+            else if (message.action.GetType() == typeof(TLMessageActionPinMessage))
+                sMessage = "PinMessage";
+            else
+                throw new TLCoreException("Unknown message service");
+
+            Prepend(sMessage);
             Prepend(m_sHeader);
         }
 

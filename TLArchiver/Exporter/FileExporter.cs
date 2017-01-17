@@ -55,10 +55,7 @@ namespace TLArchiver.Exporter
 
         public virtual void ExportMessage(TLMessage message)
         {
-            if (message.from_id != null && m_config.Contacts.ContainsKey(message.from_id.Value))
-                m_sAuthor = m_config.Contacts[message.from_id.Value];
-            else
-                m_sAuthor = String.Format(c_sUnknownAuthor, message.from_id);
+
         }
 
         public virtual void ExportMessageService(TLMessageService message)
@@ -96,6 +93,14 @@ namespace TLArchiver.Exporter
         {
             if (m_config.ExportMessages)
                 m_messages.Insert(0, sMessage + Environment.NewLine);
+        }
+
+        protected string GetAuthor(int? iAuthor)
+        {
+            if (iAuthor != null && m_config.Contacts.ContainsKey(iAuthor.Value))
+                return m_config.Contacts[iAuthor.Value];
+            else
+                return String.Format(c_sUnknownAuthor, iAuthor);
         }
     }
 }

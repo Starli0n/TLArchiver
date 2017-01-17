@@ -422,9 +422,6 @@ namespace TLArchiver.UI
             UpdateConfig();
             using (FormExport export = new FormExport())
                 export.ShowDialog(this);
-            /*m_tlArchiveMedia.Export(
-                m_cbFromDate.Checked ? m_dtpFrom.Value : DateTime.MinValue,
-                m_cbToDate.Checked ? m_dtpTo.Value : DateTime.MaxValue);*/
         }
 
         private void UpdateConfig()
