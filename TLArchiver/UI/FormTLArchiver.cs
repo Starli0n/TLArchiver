@@ -101,8 +101,9 @@ namespace TLArchiver.UI
             m_dgvDialogs.ClearSelection();
 
             m_dialogs.Clear();
-            m_dialogs.AddRange(m_archiver.GetUserDialogs());
             m_dialogs.AddRange(m_archiver.GetContacts());
+            m_config.Contacts = m_dialogs.ToDictionary(d => d.Id, d => d.Title);
+            m_dialogs.AddRange(m_archiver.GetUserDialogs());
 
             if (m_config.CountMessagesAtLaunch)
                 foreach (TLADialog dialog in m_dialogs)

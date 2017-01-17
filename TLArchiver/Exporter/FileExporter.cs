@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using TeleSharp.TL;
 using TLArchiver.Core;
 using TLArchiver.Entities;
@@ -8,16 +10,19 @@ namespace TLArchiver.Exporter
 {
     public abstract class FileExporter : IExporter
     {
+        protected static readonly string c_sUnknownAuthor = "Unknown ({0})";
+
         protected Config m_config;
         protected string m_sExporterDirectory;
         protected string m_sMessagesFile;
         protected string m_sDialogDirectory;
-        protected StreamWriter m_file;
+        protected string m_sAuthor;
+        protected StringBuilder m_messages;
 
         public FileExporter(Config config)
         {
             m_config = config;
-            m_file = null;
+            m_messages = new StringBuilder();
         }
 
         protected void Initialize(string directory)
@@ -40,10 +45,7 @@ namespace TLArchiver.Exporter
             Directory.CreateDirectory(m_sDialogDirectory);
 
             if (m_config.ExportMessages)
-            {
-                string sFile = Path.Combine(m_sDialogDirectory, m_sMessagesFile);
-                m_file = new StreamWriter(sFile);
-            }
+                m_messages.Clear();
         }
 
         public virtual void BeginMessage(TLAbsMessage absMessage)
@@ -53,7 +55,10 @@ namespace TLArchiver.Exporter
 
         public virtual void ExportMessage(TLMessage message)
         {
-
+            if (message.from_id != null && m_config.Contacts.ContainsKey(message.from_id.Value))
+                m_sAuthor = m_config.Contacts[message.from_id.Value];
+            else
+                m_sAuthor = String.Format(c_sUnknownAuthor, message.from_id);
         }
 
         public virtual void ExportMessageService(TLMessageService message)
@@ -68,7 +73,13 @@ namespace TLArchiver.Exporter
 
         public virtual void EndDialog(TLADialog dialog)
         {
-            CloseFile();
+            if (m_config.ExportMessages)
+            {
+                string sFile = Path.Combine(m_sDialogDirectory, m_sMessagesFile);
+                using (StreamWriter file = new StreamWriter(sFile))
+                    file.Write(m_messages.ToString());
+                m_messages.Clear();
+            }
         }
 
         public virtual void EndDialogs(ICollection<TLADialog> m_dialogs)
@@ -78,18 +89,13 @@ namespace TLArchiver.Exporter
 
         public virtual void Abort()
         {
-            CloseFile();
+
         }
 
-        private void CloseFile()
+        protected void Prepend(string sMessage = "")
         {
-            if (m_file != null)
-            {
-                m_file.Flush();
-                m_file.Close();
-                m_file.Dispose();
-                m_file = null;
-            }
+            if (m_config.ExportMessages)
+                m_messages.Insert(0, sMessage + Environment.NewLine);
         }
     }
 }

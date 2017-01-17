@@ -82,6 +82,7 @@
       <DependentUpon>FormTLSignIn.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\AsyncHelpers.cs" />
+    <Compile Include="Utils\Date.cs" />
     <EmbeddedResource Include="UI\FormExport.resx">
       <DependentUpon>FormExport.cs</DependentUpon>
     </EmbeddedResource>

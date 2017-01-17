@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 
 namespace TLArchiver.Core
@@ -43,6 +44,8 @@ namespace TLArchiver.Core
 
         public bool ExportText { get; set; }
         public bool ExportHtml { get; set; }
+
+        public Dictionary<int, string> Contacts { get; set; }
 
         static public void Load(Config config)
         {

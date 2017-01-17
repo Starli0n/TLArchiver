@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TeleSharp.TL;
 using TeleSharp.TL.Contacts;
 using TeleSharp.TL.Messages;
@@ -12,7 +11,6 @@ namespace TLArchiver.Core
     public class TLAArchiver
     {
         private static readonly List<string> c_sExtensions = new List<string>() { "jpg", "gif", "png" };
-        private static readonly DateTime c_date0 = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         private const int c_iInitialIndex = 1;
         private const string c_sPhoto = "Photo";
         private const string c_sVideo = "Video";
@@ -89,7 +87,7 @@ namespace TLArchiver.Core
                         Id = chat.id,
                         Type = TLADialogType.Chat,
                         Title = chat.title,
-                        Date = c_date0.AddSeconds(chat.date).ToLocalTime(),
+                        Date = Date.TLConvert(chat.date),
                         Closed = false
                     };
                 }
@@ -101,10 +99,10 @@ namespace TLArchiver.Core
                     yield return new TLADialog()
                     {
                         Id = channel.id,
-                        AccessHash = (long) channel.access_hash,
+                        AccessHash = channel.access_hash.Value,
                         Type = TLADialogType.Channel,
                         Title = channel.title,
-                        Date = c_date0.AddSeconds(channel.date).ToLocalTime(),
+                        Date = Date.TLConvert(channel.date),
                         Closed = false
                     };
                 }
