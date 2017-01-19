@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using TeleSharp.TL;
+using TeleSharp.TL.Contacts;
+using TeleSharp.TL.Messages;
+using TLArchiveMedia.Entities;
 using TLSharp.Core;
-using TLSharp.Core.MTProto;
 
 namespace TLArchiveMedia
 {
-    class TLArchiveMedia
+    public class TLArchiver
     {
         private static readonly List<string> c_sExtensions = new List<string>() { "jpg", "gif", "png" };
+        private static readonly DateTime c_date0 = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         private const int c_iInitialIndex = 1;
         private const string c_sPhoto = "Photo";
         private const string c_sVideo = "Video";
@@ -20,11 +23,11 @@ namespace TLArchiveMedia
         private string m_sPrefix;
         private Dictionary<string, int> m_ExtToIndex;
 
-        public TLArchiveMedia(Config config)
+        public TLArchiver(Config config)
         {
             m_config = config;
             m_store = new FileSessionStore();
-            m_client = new TelegramClient(m_store, "session", m_config.ApiId, m_config.ApiHash);
+            m_client = new TelegramClient(m_config.ApiId, m_config.ApiHash, m_store, "session");
             m_ExtToIndex = new Dictionary<string, int>();
         }
 
@@ -36,21 +39,147 @@ namespace TLArchiveMedia
 
         public void SendCodeRequest()
         {
-             m_hash = AsyncHelpers.RunSync<string>(() => m_client.SendCodeRequest(m_config.NumberToAuthenticate));
+             m_hash = AsyncHelpers.RunSync<string>(() => m_client.SendCodeRequestAsync(m_config.NumberToAuthenticate));
         }
 
         public bool MakeAuth(string code)
         {
-            User user = AsyncHelpers.RunSync<User>(() => m_client.MakeAuth(m_config.NumberToAuthenticate, m_hash, code));
+            TLUser user = AsyncHelpers.RunSync<TLUser>(() => m_client.MakeAuthAsync(m_config.NumberToAuthenticate, m_hash, code));
             return user != null;
         }
 
         public bool Connect()
         {
-            bool res = AsyncHelpers.RunSync<bool>(() => m_client.Connect());
+            bool res = AsyncHelpers.RunSync<bool>(() => m_client.ConnectAsync());
             return m_client.IsUserAuthorized();
         }
 
+        public IEnumerable<TLADialog> GetContacts()
+        {
+            var contacts = AsyncHelpers.RunSync<TLContacts>(() => m_client.GetContactsAsync());
+            foreach (var absUser in contacts.users.lists)
+            {
+                if (absUser.GetType() == typeof(TLUser))
+                {
+                    var user = (TLUser)absUser;
+                    yield return new TLADialog()
+                    {
+                        Id = user.id,
+                        Type = TLADialogType.User,
+                        Title = user.first_name + ' ' + user.last_name,
+                        Closed = false
+                    };
+                }
+                else
+                    throw new TLCoreException("Type of TLDialog is unknown");
+            }
+        }
+
+        public IEnumerable<TLADialog> GetUserDialogs()
+        {
+            var dialogs = (TLDialogs)AsyncHelpers.RunSync<TLAbsDialogs>(() => m_client.GetUserDialogsAsync());
+            foreach (var absChat in dialogs.chats.lists)
+            {
+                if (absChat.GetType() == typeof(TLChat))
+                {
+                    var chat = (TLChat)absChat;
+                    yield return new TLADialog()
+                    {
+                        Id = chat.id,
+                        Type = TLADialogType.Chat,
+                        Title = chat.title,
+                        Date = c_date0.AddSeconds(chat.date).ToLocalTime(),
+                        Closed = false
+                    };
+                }
+                else if (absChat.GetType() == typeof(TLChannel))
+                {
+                    var channel = (TLChannel)absChat;
+                    yield return new TLADialog()
+                    {
+                        Id = channel.id,
+                        Type = TLADialogType.Channel,
+                        Title = channel.title,
+                        Date = c_date0.AddSeconds(channel.date).ToLocalTime(),
+                        Closed = false
+                    };
+                }
+                else if (absChat.GetType() == typeof(TLChatForbidden))
+                {
+                    var chatF = (TLChatForbidden)absChat;
+                    yield return new TLADialog()
+                    {
+                        Id = chatF.id,
+                        Type = TLADialogType.Chat,
+                        Title = chatF.title,
+                        Closed = true
+                    };
+                }
+                else if (absChat.GetType() == typeof(TLChannelForbidden))
+                {
+                    var channelF = (TLChannelForbidden)absChat;
+                    yield return new TLADialog()
+                    {
+                        Id = channelF.id,
+                        Type = TLADialogType.Channel,
+                        Title = channelF.title,
+                        Closed = true
+                    };
+                }
+                else
+                    throw new TLCoreException("Type of TLDialog is unknown");
+            }
+        }
+
+        public TLAbsInputPeer CreatePeerFromDialog(TLADialog dialog)
+        {
+            TLAbsInputPeer peer = null;
+            if (dialog.Type == TLADialogType.Channel)
+                peer = new TLInputPeerChannel() { channel_id = dialog.Id };
+            else if (dialog.Type == TLADialogType.Chat)
+                peer = new TLInputPeerChat() { chat_id = dialog.Id };
+            else if (dialog.Type == TLADialogType.User)
+                peer = new TLInputPeerUser() { user_id = dialog.Id };
+            else
+                throw new TLCoreException("Type of TLDialog is unknown");
+            return peer;
+        }
+
+        public int GetTotalMessages(TLADialog dialog)
+        {
+            TLAbsInputPeer peer = CreatePeerFromDialog(dialog);
+
+            // Get only one message to have the total amount of messages
+            var messages = (TLAbsMessages)AsyncHelpers.RunSync<TLAbsMessages>(() => m_client.GetHistoryAsync(peer, 0, 0, 1));
+
+            var slice = messages as TLMessagesSlice;
+            if (slice == null)
+                throw new TLCoreException("The message is not a TLMessagesSlice");
+
+            return slice.count;
+        }
+
+        public IEnumerable<TLAbsMessage> GetMessages(TLADialog dialog, int iTotal)
+        {
+            TLAbsInputPeer peer = CreatePeerFromDialog(dialog);
+
+            int iRead = 0;
+            while (iRead < iTotal)
+            {
+                var messages = (TLAbsMessages)AsyncHelpers.RunSync<TLAbsMessages>(() => m_client.GetHistoryAsync(peer, iRead, 0, m_config.MessagesReadLimit));
+
+                var slice = messages as TLMessagesSlice;
+                if (slice == null)
+                    throw new TLCoreException("The message is not a TLMessagesSlice");
+
+                foreach (TLAbsMessage message in slice.messages.lists)
+                    yield return message;
+
+                iRead += m_config.MessagesReadLimit;
+            }
+        }
+
+        /*
         public void Export(DateTime dtFrom, DateTime dtTo)
         {
             m_sPrefix = "";
@@ -101,6 +230,7 @@ namespace TLArchiveMedia
             using (FileStream file = new FileStream(Path.Combine(ExportDirectory, sFilename), FileMode.Create, FileAccess.Write))
                 file.Write(bytes, 4, photoSize.size);
         }
+        */
 
         private void ExportVideo()
         {

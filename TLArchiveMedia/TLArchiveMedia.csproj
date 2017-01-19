@@ -52,6 +52,16 @@
   <ItemGroup>
     <Compile Include="Core\Config.cs" />
     <Compile Include="Core\TLArchiveMedia.cs" />
+    <Compile Include="Core\TLException.cs" />
+    <Compile Include="Entities\TLADialog.cs" />
+    <Compile Include="Entities\TLADialogType.cs" />
+    <Compile Include="UI\DatagridViewCheckBoxHeaderCell.cs" />
+    <Compile Include="UI\FormExport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\FormExport.Designer.cs">
+      <DependentUpon>FormExport.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\FormTLArchiveMedia.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -60,7 +70,16 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\FormTLSignIn.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\FormTLSignIn.Designer.cs">
+      <DependentUpon>FormTLSignIn.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utils\AsyncHelpers.cs" />
+    <EmbeddedResource Include="UI\FormExport.resx">
+      <DependentUpon>FormExport.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\FormTLArchiveMedia.resx">
       <DependentUpon>FormTLArchiveMedia.cs</DependentUpon>
     </EmbeddedResource>
@@ -73,6 +92,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="UI\FormTLSignIn.resx">
+      <DependentUpon>FormTLSignIn.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -98,6 +120,10 @@
     <Content Include="../td_logo.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TLSharp\TeleSharp.TL\TeleSharp.TL.csproj">
+      <Project>{D6144517-91D2-4880-86DF-E9FF5D7F383A}</Project>
+      <Name>TeleSharp.TL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TLSharp\TLSharp.Core\TLSharp.Core.csproj">
       <Project>{400d2544-1cc6-4d8a-a62c-2292d9947a16}</Project>
       <Name>TLSharp.Core</Name>

@@ -15,7 +15,7 @@ namespace TLArchiveMedia
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new FormTLArchiveMedia());
+                Application.Run(new UI.FormTLArchiveMedia());
             }
             catch(Exception ex)
             {
