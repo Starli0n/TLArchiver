@@ -39,7 +39,7 @@ namespace TLArchiver.UI
             // https://msdn.microsoft.com/en-us/library/7a2f3ay4(v=vs.100).aspx
 
             // Create the worker thread object. This does not start the thread.
-            m_exporter = new TLAExporter(config, archiver, dialogList);
+            m_exporter = new TLAExporter(config, dialogList);
             if (config.ExportText)
                 m_exporter.AddExporter(new TxtExporter(config, m_exporter.ExportDirectory));
             if (config.ExportHtml)

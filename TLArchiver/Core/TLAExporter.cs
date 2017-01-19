@@ -31,10 +31,10 @@ namespace TLArchiver.Core
         private TLAArchiver m_archiver;
         private ICollection<TLADialog> m_dialogs;
 
-        public TLAExporter(Config config, TLAArchiver archiver, ICollection<TLADialog> dialogs)
+        public TLAExporter(Config config, ICollection<TLADialog> dialogs)
         {
             m_config = config;
-            m_archiver = archiver;
+            m_archiver = config.Archiver;
             m_dialogs = dialogs;
 
             OnBeginDialogs = null;

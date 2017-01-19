@@ -4,8 +4,8 @@ namespace TLArchiver.Exporter
 {
     public class HtmlExporter : FileExporter, IExporter
     {
-        private static readonly string c_sExporterDirectory = "Html";
-        private static readonly string c_sMessagesFile = "Messages.html";
+        private const string c_sExporterDirectory = "Html";
+        private const string c_sMessagesFile = "Messages.html";
 
         public HtmlExporter(Config config, string sDirectory) : base(config)
         {

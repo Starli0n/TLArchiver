@@ -426,6 +426,8 @@ namespace TLArchiver.UI
 
         private void UpdateConfig()
         {
+            m_config.Archiver = m_archiver;
+
             m_config.IsFromDate = m_cbFromDate.Checked;
             m_config.IsToDate = m_cbToDate.Checked;
             m_config.FromDate = m_dtpFrom.Value;

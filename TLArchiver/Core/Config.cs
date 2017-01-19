@@ -31,6 +31,8 @@ namespace TLArchiver.Core
         public bool CountMessagesAtLaunch { get; set; }
 
         // Data from the app
+        public TLAArchiver Archiver { get; set; }
+
         public bool IsFromDate { get; set; }
         public bool IsToDate { get; set; }
         public DateTime FromDate { get; set; }

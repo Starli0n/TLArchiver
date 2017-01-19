@@ -7,9 +7,9 @@ namespace TLArchiver.Exporter
 {
     public class TxtExporter : FileExporter, IExporter
     {
-        private static readonly string c_sMessageHeader = "{0}, [{1}]"; // Author, dd.mm.yy hh:mm
-        private static readonly string c_sExporterDirectory = "Text";
-        private static readonly string c_sMessagesFile = "Messages.txt";
+        private const string c_sMessageHeader = "{0}, [{1}]"; // Author, dd.mm.yy hh:mm
+        private const string c_sExporterDirectory = "Text";
+        private const string c_sMessagesFile = "Messages.txt";
 
         protected string m_sHeader;
 
@@ -24,7 +24,19 @@ namespace TLArchiver.Exporter
         {
             m_sAuthor = GetAuthor(message.from_id);
             m_sHeader = String.Format(c_sMessageHeader, m_sAuthor, Date.TLConvertTxt(message.date));
-            Prepend(message.message);
+
+            if (message.media != null)
+            {
+                m_sPrefix = Date.TLPrefix(message.date);
+                if (message.media.GetType() == typeof(TLMessageMediaPhoto))
+                {
+                    string sFileName = ExportPhoto((TLMessageMediaPhoto)message.media);
+                    Prepend(String.Format("[{0}]", sFileName));
+                }
+            }
+
+            if (message.message != "")
+                Prepend(message.message);
             Prepend(m_sHeader);
         }
 
