@@ -33,6 +33,11 @@ namespace TLArchiver.Exporter
                     string sFileName = ExportPhoto((TLMessageMediaPhoto)message.media);
                     Prepend(String.Format("[{0}]", sFileName));
                 }
+                else if (message.media.GetType() == typeof(TLMessageMediaDocument))
+                {
+                    string sFileName = ExportDocument((TLMessageMediaDocument)message.media);
+                    Prepend(String.Format("[{0}]", sFileName));
+                }
             }
 
             if (message.message != "")

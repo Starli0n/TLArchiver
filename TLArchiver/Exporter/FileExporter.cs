@@ -177,6 +177,42 @@ namespace TLArchiver.Exporter
             return sFileName; // YYYY-MM-DD-CaptionXX.EXT
         }
 
+        protected string ExportDocument(TLMessageMediaDocument media)
+        {
+            // TLPhoto contains a collection of TLPhotoSize
+            TLDocument document = media.document as TLDocument;
+            if (document == null)
+                throw new TLCoreException("The document is not an instance of TLDocument");
+
+            if (document.attributes.lists.Count <= 0)
+                throw new TLCoreException("TLDocument does not have any attributes");
+
+            TLDocumentAttributeFilename attr = document.attributes.lists[0] as TLDocumentAttributeFilename;
+            if (attr == null)
+                throw new TLCoreException("The TLDocumentAttributeFilename has not been found");
+            if (String.IsNullOrEmpty(attr.file_name))
+                throw new TLCoreException("The file_name of the document is empty");
+
+            // Key: YYYY-MM-DD-Caption{0:00}.EXT
+            string key = String.Format("{0}-{1}{2}",
+                m_sPrefix,
+                "{0:00}",
+                attr.file_name);
+
+            string sFileName = GetUniqueFileName(key); // YYYY-MM-DD-CaptionXX.EXT
+
+            if (m_config.ExportFiles)
+            {
+                // Export the photo to a file
+                string sFullFileName = Path.Combine(m_sDialogDirectory, sFileName);
+                using (FileStream f = new FileStream(sFullFileName, FileMode.Create, FileAccess.Write))
+                    foreach (TLFile file in m_archiver.GetDocument(document))
+                        f.Write(file.bytes, 0, file.bytes.Length);
+            }
+
+            return sFileName; // YYYY-MM-DD-CaptionXX.EXT
+        }
+
         protected string GetUniqueFileName(string key)
         {
             int id = c_iInitialIndex;

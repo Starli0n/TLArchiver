@@ -184,7 +184,32 @@ namespace TLArchiver.Core
                 secret = fileLocation.secret,
             };
             TLFile file = (TLFile)AsyncHelpers.RunSync<TLFile>(() => m_client.GetFile(inputFileLocation, iSize));
+            if (file.bytes.Length != iSize)
+                throw new TLCoreException("The file need to be downloaded in parts");
             return file;
+        }
+
+        public IEnumerable<TLFile> GetDocument(TLDocument document)
+        {
+            TLAbsInputFileLocation inputDocument = new TLInputDocumentFileLocation()
+            {
+                id = document.id,
+                access_hash = document.access_hash,
+                version = document.version,
+            };
+
+            int iRemainingSize = document.size;
+            int iOffset = 0;
+            int iRead;
+            TLFile file;
+            while (iRemainingSize > 0)
+            {
+                file = (TLFile)AsyncHelpers.RunSync<TLFile>(() => m_client.GetFile(inputDocument, iRemainingSize, iOffset));
+                iRead = file.bytes.Length;
+                iRemainingSize -= iRead;
+                iOffset += iRead;
+                yield return file;
+            }
         }
     }
 }
