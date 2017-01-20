@@ -15,6 +15,8 @@ namespace TLArchiver.Exporter
         protected const string c_sUnknownAuthor = "Unknown ({0})"; // Export the id of the unknonw author
         protected const string c_sPhoto = "Photo"; // Caption use for photo 'YYYY-MM-DD-PhotoXX.EXT'
         protected const string c_sVideo = "Video"; // Caption use for video 'YYYY-MM-DD-VideoXX.EXT'
+        protected const string c_sAudio = "Audio"; // Caption use for video 'YYYY-MM-DD-AudioXX.EXT'
+        protected const string c_sVoice = "Voice"; // Caption use for video 'YYYY-MM-DD-VoiceXX.EXT'
         protected const int c_iInitialIndex = 1; // XX starts at 01
 
         protected Config m_config;
@@ -194,6 +196,9 @@ namespace TLArchiver.Exporter
             if (document.attributes.lists.Count <= 0)
                 throw new TLCoreException("TLDocument does not have any attributes");
 
+            if (document.mime_type.StartsWith("audio"))
+                return ExportAudio(media, document);
+
             // Find TLDocumentAttributeFilename from list of attributes
             TLDocumentAttributeFilename attr = null;
             foreach (TLAbsDocumentAttribute absAttr in document.attributes.lists)
@@ -218,7 +223,7 @@ namespace TLArchiver.Exporter
 
             if (m_config.ExportFiles)
             {
-                // Export the photo to a file
+                // Export the document to a file
                 string sFullFileName = Path.Combine(m_sDialogDirectory, sFileName);
                 using (FileStream f = new FileStream(sFullFileName, FileMode.Create, FileAccess.Write))
                     foreach (TLFile file in m_archiver.GetDocument(document))
@@ -230,6 +235,63 @@ namespace TLArchiver.Exporter
             }
 
             return sFileName; // YYYY-MM-DD-CaptionXX.EXT
+        }
+
+        protected string ExportAudio(TLMessageMediaDocument media, TLDocument document)
+        {
+            // Find TLDocumentAttributeFilename from list of attributes
+            TLDocumentAttributeAudio attrAudio = null;
+            TLDocumentAttributeFilename attrFile = null;
+            foreach (TLAbsDocumentAttribute absAttr in document.attributes.lists)
+            {
+                if (absAttr is TLDocumentAttributeAudio)
+                    attrAudio = (TLDocumentAttributeAudio)absAttr;
+
+                else if (absAttr is TLDocumentAttributeFilename)
+                    attrFile = (TLDocumentAttributeFilename)absAttr;
+            }
+
+            if (attrAudio == null && attrFile == null)
+                throw new TLCoreException("The TLDocumentAttributeAudio and TLDocumentAttributeFilename have not been found");
+
+            string key;
+            if (attrFile != null)
+            {
+                // Key: YYYY-MM-DD-Caption{0:00}.EXT
+                key = String.Format("{0}-{1}{2}",
+                    m_sPrefix,
+                    "{0:00}",
+                    attrFile.file_name);
+            }
+            else
+            {
+                string sCaption = attrAudio.voice ? c_sVoice : c_sAudio;
+                string ext = document.mime_type.Substring(document.mime_type.Length - 3).Trim();
+
+                // Key: YYYY-MM-DD-Caption{0:00}.EXT
+                key = String.Format("{0}-{1}{2}.{3}",
+                    m_sPrefix,
+                    sCaption,
+                    "{0:00}",
+                    ext);
+            }
+
+            string sFileName = GetUniqueFileName(key); // YYYY-MM-DD-AudioXX.EXT
+
+            if (m_config.ExportVoiceMessages)
+            {
+                // Export the document to a file
+                string sFullFileName = Path.Combine(m_sDialogDirectory, sFileName);
+                using (FileStream f = new FileStream(sFullFileName, FileMode.Create, FileAccess.Write))
+                    foreach (TLFile file in m_archiver.GetDocument(document))
+                    {
+                        if (file.type.GetType() == typeof(TLFileUnknown))
+                            throw new TLCoreException("File unknown: " + sFileName);
+                        f.Write(file.bytes, 0, file.bytes.Length);
+                    }
+            }
+
+            return sFileName; // YYYY-MM-DD-AudioXX.EXT
         }
 
         protected string GetUniqueFileName(string key)
