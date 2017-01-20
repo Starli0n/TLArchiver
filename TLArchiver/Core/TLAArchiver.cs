@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using TeleSharp.TL;
 using TeleSharp.TL.Contacts;
 using TeleSharp.TL.Messages;
@@ -6,6 +8,7 @@ using TeleSharp.TL.Upload;
 using TLArchiver.Entities;
 using TLArchiver.Utils;
 using TLSharp.Core;
+using TLSharp.Core.Network;
 
 namespace TLArchiver.Core
 {
@@ -161,18 +164,43 @@ namespace TLArchiver.Core
             TLAbsInputPeer peer = CreatePeerFromDialog(dialog);
 
             int iRead = 0;
+            TLAbsMessages messages;
             while (iRead < dialog.Total)
             {
-                var messages = (TLAbsMessages)AsyncHelpers.RunSync<TLAbsMessages>(() => m_client.GetHistoryAsync(peer, iRead, 0, m_config.MessagesReadLimit));
+                messages = null;
+                try
+                {
+                    messages = (TLAbsMessages)AsyncHelpers.RunSync<TLAbsMessages>(() => m_client.GetHistoryAsync(peer, iRead, 0, m_config.MessagesReadLimit));
+                }
+                catch (AggregateException e)
+                {
+                    if (e.InnerException.GetType() == typeof(FloodException))
+                    {
+                        FloodException f = (FloodException)e.InnerException;
+                        Thread.Sleep((int)f.TimeToWait.TotalMilliseconds);
+                    }
+                    else
+                        throw e;
+                }
 
-                var slice = messages as TLMessagesSlice;
-                if (slice == null)
-                    throw new TLCoreException("The message is not a TLMessagesSlice");
+                if (messages != null)
+                {
+                    TLVector<TLAbsMessage> absMessages = null;
 
-                foreach (TLAbsMessage message in slice.messages.lists)
-                    yield return message;
+                    if (messages is TLMessagesSlice) // Need several loops to read all the messages
+                        absMessages = ((TLMessagesSlice)messages).messages;
 
-                iRead += m_config.MessagesReadLimit;
+                    else if (messages is TLMessages) // All messges had been read at the first loop
+                        absMessages = ((TLMessages)messages).messages;
+
+                    else
+                        throw new TLCoreException("The message is not a TLMessagesSlice or a TLMessages");
+
+                    foreach (TLAbsMessage message in absMessages.lists)
+                        yield return message;
+
+                    iRead += m_config.MessagesReadLimit;
+                }
             }
         }
 

@@ -52,44 +52,53 @@ namespace TLArchiver.Core
 
         public void Start()
         {
-            if (OnBeginDialogs != null)
-                OnBeginDialogs(m_dialogs);
-
-            foreach (TLADialog dialog in m_dialogs)
+            try
             {
-                if (!m_config.CountMessagesAtLaunch)
-                    dialog.Total = m_archiver.GetTotalMessages(dialog);
+                if (OnBeginDialogs != null)
+                    OnBeginDialogs(m_dialogs);
 
-                if (OnBeginDialog != null)
-                    OnBeginDialog(dialog);
-
-                foreach (TLAbsMessage absMessage in m_archiver.GetMessages(dialog))
+                foreach (TLADialog dialog in m_dialogs)
                 {
-                    if (m_bAbort)
+                    if (!m_config.CountMessagesAtLaunch)
+                        dialog.Total = m_archiver.GetTotalMessages(dialog);
+
+                    if (OnBeginDialog != null)
+                        OnBeginDialog(dialog);
+
+                    foreach (TLAbsMessage absMessage in m_archiver.GetMessages(dialog))
                     {
-                        if (OnAbort != null)
-                            OnAbort();
-                        return;
+                        if (m_bAbort)
+                        {
+                            if (OnAbort != null)
+                                OnAbort();
+                            return;
+                        }
+
+                        if (OnBeginMessage != null)
+                            OnBeginMessage(absMessage);
+
+                        if (absMessage is TLMessage && OnExportMessage != null)
+                            OnExportMessage((TLMessage)absMessage);
+                        else if (absMessage is TLMessageService && OnExportMessageService != null)
+                            OnExportMessageService((TLMessageService)absMessage);
+                        else
+                            throw new TLCoreException("The message is not a TLMessage or a TLMessageService");
+
+                        if (OnEndMessage != null)
+                            OnEndMessage(absMessage);
                     }
-
-                    if (OnBeginMessage != null)
-                        OnBeginMessage(absMessage);
-
-                    if (absMessage is TLMessage && OnExportMessage != null)
-                        OnExportMessage((TLMessage)absMessage);
-                    else if (absMessage is TLMessageService && OnExportMessageService != null)
-                        OnExportMessageService((TLMessageService)absMessage);
-                    else
-                        throw new TLCoreException("The message is not a TLMessage or a TLMessageService");
-
-                    if (OnEndMessage != null)
-                        OnEndMessage(absMessage);
+                    if (OnEndDialog != null)
+                        OnEndDialog(dialog);
                 }
-                if (OnEndDialog != null)
-                    OnEndDialog(dialog);
+                if (OnEndDialogs != null)
+                    OnEndDialogs(m_dialogs);
             }
-            if (OnEndDialogs != null)
-                OnEndDialogs(m_dialogs);
+            catch(Exception e)
+            {
+                if (OnAbort != null)
+                    OnAbort();
+                throw e;
+            }
         }
 
         public void RequestStop()

@@ -21,10 +21,12 @@ namespace TLArchiver.Exporter
         protected TLAArchiver m_archiver;
         protected string m_sExporterDirectory; // Path of the exporter
         protected string m_sMessagesFile; // Path of the file to export messages of a dialog
+        protected string m_sLogsFile; // Path of the file to log error of a dialog
         protected string m_sDialogDirectory; // Directory for a dialog
         protected string m_sAuthor; // The Author of a message
         protected string m_sPrefix; // The date of a message 'YYYY-MM-DD' used to prefix a file
         protected StringBuilder m_messages; // Used to write the dialog content
+        protected StringBuilder m_logs; // Used to write the log content
         protected Dictionary<string, int> m_fileNames; // Dictionary to maintain the unicity of each file of a dialog
 
         public FileExporter(Config config)
@@ -32,6 +34,7 @@ namespace TLArchiver.Exporter
             m_config = config;
             m_archiver = config.Archiver;
             m_messages = new StringBuilder();
+            m_logs = new StringBuilder();
             m_fileNames = new Dictionary<string, int>();
         }
 
@@ -55,6 +58,7 @@ namespace TLArchiver.Exporter
             Directory.CreateDirectory(m_sDialogDirectory);
 
             m_messages.Clear();
+            m_logs.Clear();
             m_fileNames.Clear(); // Reset as dialog directory changed
         }
 
@@ -80,14 +84,11 @@ namespace TLArchiver.Exporter
 
         public virtual void EndDialog(TLADialog dialog)
         {
-            if (m_config.ExportMessages)
-            {
-                // Write the dialog content from the StringBuilder to a file
-                string sFile = Path.Combine(m_sDialogDirectory, m_sMessagesFile);
-                using (StreamWriter file = new StreamWriter(sFile))
-                    file.Write(m_messages.ToString());
-                m_messages.Clear();
-            }
+            if (m_logs.Length > 0)
+                WriteStringBuilder(m_logs, m_sLogsFile);
+
+            if (m_config.ExportMessages && m_messages.Length > 0)
+                WriteStringBuilder(m_messages, m_sMessagesFile);
         }
 
         public virtual void EndDialogs(ICollection<TLADialog> m_dialogs)
@@ -97,7 +98,7 @@ namespace TLArchiver.Exporter
 
         public virtual void Abort()
         {
-
+            EndDialog(null);
         }
 
         protected void Prepend(string sMessage = "")
@@ -105,6 +106,12 @@ namespace TLArchiver.Exporter
             if (m_config.ExportMessages)
                 // Insert message at the beginning as messages are received in a reverse order
                 m_messages.Insert(0, sMessage + Environment.NewLine);
+        }
+
+        protected void PrependLog(string sMessage = "")
+        {
+            // Insert message at the beginning as messages are received in a reverse order
+            m_logs.Insert(0, sMessage + Environment.NewLine);
         }
 
         protected string GetAuthor(int? iAuthor)
@@ -187,7 +194,15 @@ namespace TLArchiver.Exporter
             if (document.attributes.lists.Count <= 0)
                 throw new TLCoreException("TLDocument does not have any attributes");
 
-            TLDocumentAttributeFilename attr = document.attributes.lists[0] as TLDocumentAttributeFilename;
+            // Find TLDocumentAttributeFilename from list of attributes
+            TLDocumentAttributeFilename attr = null;
+            foreach (TLAbsDocumentAttribute absAttr in document.attributes.lists)
+            {
+                attr = absAttr as TLDocumentAttributeFilename;
+                if (attr != null)
+                    break;
+            }
+
             if (attr == null)
                 throw new TLCoreException("The TLDocumentAttributeFilename has not been found");
             if (String.IsNullOrEmpty(attr.file_name))
@@ -207,7 +222,11 @@ namespace TLArchiver.Exporter
                 string sFullFileName = Path.Combine(m_sDialogDirectory, sFileName);
                 using (FileStream f = new FileStream(sFullFileName, FileMode.Create, FileAccess.Write))
                     foreach (TLFile file in m_archiver.GetDocument(document))
+                    {
+                        if (file.type.GetType() == typeof(TLFileUnknown))
+                            throw new TLCoreException("File unknown: " + sFileName);
                         f.Write(file.bytes, 0, file.bytes.Length);
+                    }
             }
 
             return sFileName; // YYYY-MM-DD-CaptionXX.EXT
@@ -225,6 +244,15 @@ namespace TLArchiver.Exporter
             string sFileName = String.Format(key, id);
             m_fileNames[key] = id + 1;
             return sFileName;
+        }
+
+        protected void WriteStringBuilder(StringBuilder sLines, string sFileName)
+        {
+            // Write the file content from the StringBuilder to a file
+            string sFile = Path.Combine(m_sDialogDirectory, sFileName);
+            using (StreamWriter file = new StreamWriter(sFile))
+                file.Write(sLines.ToString());
+            sLines.Clear();
         }
     }
 }

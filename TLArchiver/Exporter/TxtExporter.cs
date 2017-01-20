@@ -9,7 +9,9 @@ namespace TLArchiver.Exporter
     {
         private const string c_sMessageHeader = "{0}, [{1}]"; // Author, dd.mm.yy hh:mm
         private const string c_sExporterDirectory = "Text";
-        private const string c_sMessagesFile = "Messages.txt";
+        private const string c_sMessagesFile = "Messages.txt"; // Messages for one dialog
+        private const string c_sLogsFile = "Logs.txt"; // Logs for one dialog
+        private const string c_sErrorTag = "### Error:"; // Used to identify error in logs
 
         protected string m_sHeader;
 
@@ -17,6 +19,7 @@ namespace TLArchiver.Exporter
         {
             m_sExporterDirectory = c_sExporterDirectory;
             m_sMessagesFile = c_sMessagesFile;
+            m_sLogsFile = c_sLogsFile;
             Initialize(sDirectory);
         }
 
@@ -25,20 +28,38 @@ namespace TLArchiver.Exporter
             m_sAuthor = GetAuthor(message.from_id);
             m_sHeader = String.Format(c_sMessageHeader, m_sAuthor, Date.TLConvertTxt(message.date));
 
-            if (message.media != null)
+            string sError = "";
+            try
             {
-                m_sPrefix = Date.TLPrefix(message.date);
-                if (message.media.GetType() == typeof(TLMessageMediaPhoto))
+                if (message.media != null)
                 {
-                    string sFileName = ExportPhoto((TLMessageMediaPhoto)message.media);
-                    Prepend(String.Format("[{0}]", sFileName));
-                }
-                else if (message.media.GetType() == typeof(TLMessageMediaDocument))
-                {
-                    string sFileName = ExportDocument((TLMessageMediaDocument)message.media);
-                    Prepend(String.Format("[{0}]", sFileName));
+                    m_sPrefix = Date.TLPrefix(message.date);
+                    if (message.media.GetType() == typeof(TLMessageMediaPhoto))
+                    {
+                        string sFileName = ExportPhoto((TLMessageMediaPhoto)message.media);
+                        Prepend(String.Format("[{0}]", sFileName));
+                    }
+                    else if (message.media.GetType() == typeof(TLMessageMediaDocument))
+                    {
+                        string sFileName = ExportDocument((TLMessageMediaDocument)message.media);
+                        Prepend(String.Format("[{0}]", sFileName));
+                    }
+                    else
+                        throw new TLCoreException(String.Format("Media not handled: {0}", message.media.ToString()));
                 }
             }
+            catch (TLCoreException e)
+            {
+                sError = String.Format("{0} [{1}] {2}", c_sErrorTag, message.id, e.Message);
+                PrependLog(sError);
+                if (message.message != "")
+                    PrependLog(message.message);
+                PrependLog(m_sHeader);
+                PrependLog();
+            }
+
+            if (sError != "")
+                Prepend(sError);
 
             if (message.message != "")
                 Prepend(message.message);
