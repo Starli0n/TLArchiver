@@ -22,7 +22,8 @@ namespace TLArchiver.Core
         {
             m_config = config;
             m_store = new FileSessionStore();
-            m_client = new TelegramClient(m_config.ApiId, m_config.ApiHash, m_store, "session");
+            m_client = new TelegramClient(m_config.ApiId, m_config.ApiHash, m_store, "session",
+                m_config.HttpProxyHost, m_config.HttpProxyPort, m_config.ProxyUserName, m_config.ProxyPassword);
             m_ExtToIndex = new Dictionary<string, int>();
         }
 

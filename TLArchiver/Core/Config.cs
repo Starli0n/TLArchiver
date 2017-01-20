@@ -9,6 +9,10 @@ namespace TLArchiver.Core
     public class Config
     {
         // Data from app.config
+        public string HttpProxyHost { get; set; }
+        public int HttpProxyPort { get; set; }
+        public string ProxyUserName { get; set; }
+        public string ProxyPassword { get; set; }
         public string ApiHash { get; set; }
         public int ApiId { get; set; }
         public string SignInPhoneNumberCode { get; set; }
@@ -51,6 +55,10 @@ namespace TLArchiver.Core
 
         static public void Load(Config config)
         {
+            config.HttpProxyHost = ConfigurationManager.AppSettings["HttpProxyHost"];
+            config.HttpProxyPort = Int32.Parse(ConfigurationManager.AppSettings["HttpProxyPort"]);
+            config.ProxyUserName = ConfigurationManager.AppSettings["ProxyUserName"];
+            config.ProxyPassword = ConfigurationManager.AppSettings["ProxyPassword"];
             config.ApiHash = ConfigurationManager.AppSettings["ApiHash"];
             config.ApiId = Int32.Parse(ConfigurationManager.AppSettings["ApiId"]);
             //config.NumberToAuthenticate = ConfigurationManager.AppSettings["NumberToAuthenticate"];

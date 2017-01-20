@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <configuration>
     <appSettings>
+      <add key="HttpProxyHost" value=""/>
+      <add key="HttpProxyPort" value=""/>
+      <add key="ProxyUserName" value=""/>
+      <add key="ProxyPassword" value=""/>
       <add key="ApiHash" value=""/>
       <add key="ApiId" value=""/>
       <add key="SignInPhoneNumberCode" value="" />
