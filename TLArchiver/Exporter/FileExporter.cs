@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using TeleSharp.TL;
 using TeleSharp.TL.Storage;
 using TeleSharp.TL.Upload;
@@ -18,16 +19,19 @@ namespace TLArchiver.Exporter
         protected const string c_sAudio = "Audio"; // Caption use for video 'YYYY-MM-DD-AudioXX.EXT'
         protected const string c_sVoice = "Voice"; // Caption use for video 'YYYY-MM-DD-VoiceXX.EXT'
         protected const int c_iInitialIndex = 1; // XX starts at 01
+        protected const string c_sRegExUrl = @"(http|ftp|https)://([\w+?\.\w+])+([a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)_\-\=\+\\\/\?\.\:\;\'\,]*)?";
 
         protected Config m_config;
         protected TLAArchiver m_archiver;
         protected string m_sExporterDirectory; // Path of the exporter
         protected string m_sMessagesFile; // Path of the file to export messages of a dialog
+        protected string m_sLinksFile; // Path of the file to export links of a dialog
         protected string m_sLogsFile; // Path of the file to log error of a dialog
         protected string m_sDialogDirectory; // Directory for a dialog
         protected string m_sAuthor; // The Author of a message
         protected string m_sPrefix; // The date of a message 'YYYY-MM-DD' used to prefix a file
         protected StringBuilder m_messages; // Used to write the dialog content
+        protected StringBuilder m_links; // Used to write links
         protected StringBuilder m_logs; // Used to write the log content
         protected Dictionary<string, int> m_fileNames; // Dictionary to maintain the unicity of each file of a dialog
 
@@ -36,6 +40,7 @@ namespace TLArchiver.Exporter
             m_config = config;
             m_archiver = config.Archiver;
             m_messages = new StringBuilder();
+            m_links = new StringBuilder();
             m_logs = new StringBuilder();
             m_fileNames = new Dictionary<string, int>();
         }
@@ -60,6 +65,7 @@ namespace TLArchiver.Exporter
             Directory.CreateDirectory(m_sDialogDirectory);
 
             m_messages.Clear();
+            m_links.Clear();
             m_logs.Clear();
             m_fileNames.Clear(); // Reset as dialog directory changed
         }
@@ -91,6 +97,9 @@ namespace TLArchiver.Exporter
 
             if (m_config.ExportMessages && m_messages.Length > 0)
                 WriteStringBuilder(m_messages, m_sMessagesFile);
+
+            if (m_config.ExportLinks && m_links.Length > 0)
+                WriteStringBuilder(m_links, m_sLinksFile);
         }
 
         public virtual void EndDialogs(ICollection<TLADialog> m_dialogs)
@@ -108,6 +117,27 @@ namespace TLArchiver.Exporter
             if (m_config.ExportMessages)
                 // Insert message at the beginning as messages are received in a reverse order
                 m_messages.Insert(0, sMessage + Environment.NewLine);
+        }
+
+        protected bool ProcessLink(string sMessage = "")
+        {
+            bool bProcessed = false;
+            if (m_config.ExportLinks)
+            {
+                Regex urlRx = new Regex(c_sRegExUrl, RegexOptions.IgnoreCase);
+                MatchCollection matches = urlRx.Matches(sMessage);
+                for (int i = matches.Count - 1; i >= 0; --i)
+                    PrependLink(matches[i].Value); // Prepend in reverse order
+                bProcessed = matches.Count > 0;
+            }
+            return bProcessed;
+        }
+
+        protected void PrependLink(string sMessage = "")
+        {
+            if (m_config.ExportLinks)
+                // Insert message at the beginning as messages are received in a reverse order
+                m_links.Insert(0, sMessage + Environment.NewLine);
         }
 
         protected void PrependLog(string sMessage = "")
@@ -292,6 +322,18 @@ namespace TLArchiver.Exporter
             }
 
             return sFileName; // YYYY-MM-DD-AudioXX.EXT
+        }
+
+        protected string ExportLink(TLMessageMediaWebPage media)
+        {
+            if (media.webpage is TLWebPage)
+                return ((TLWebPage)media.webpage).url;
+
+            else if (media.webpage is TLWebPageEmpty)
+                return "";
+
+            else
+                throw new TLCoreException("The web page is not an instance of TLWebPage or TLWebPageEmpty");
         }
 
         protected string GetUniqueFileName(string key)

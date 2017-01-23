@@ -18,16 +18,12 @@ namespace TLArchiver.Core
         private FileSessionStore m_store;
         private TelegramClient m_client;
         private string m_hash;
-        private string m_sPrefix;
-        private Dictionary<string, int> m_ExtToIndex;
 
         public TLAArchiver(Config config)
         {
             m_config = config;
             m_store = new FileSessionStore();
-            m_client = new TelegramClient(m_config.ApiId, m_config.ApiHash, m_store, "session",
-                m_config.HttpProxyHost, m_config.HttpProxyPort, m_config.ProxyUserName, m_config.ProxyPassword);
-            m_ExtToIndex = new Dictionary<string, int>();
+            m_client = new TelegramClient(m_config.ApiId, m_config.ApiHash, m_store, "session");
         }
 
         public void SendCodeRequest()
@@ -193,8 +189,11 @@ namespace TLArchiver.Core
                     else if (messages is TLMessages) // All messges had been read at the first loop
                         absMessages = ((TLMessages)messages).messages;
 
+                    else if (messages is TLChannelMessages) // Messages from Channel
+                        absMessages = ((TLChannelMessages)messages).messages;
+
                     else
-                        throw new TLCoreException("The message is not a TLMessagesSlice or a TLMessages");
+                        throw new TLCoreException("The message is not a TLMessagesSlice, a TLMessages or a TLChannelMessages");
 
                     foreach (TLAbsMessage message in absMessages.lists)
                         yield return message;

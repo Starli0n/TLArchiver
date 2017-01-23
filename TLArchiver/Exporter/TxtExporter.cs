@@ -10,6 +10,7 @@ namespace TLArchiver.Exporter
         private const string c_sMessageHeader = "{0}, [{1}]"; // Author, dd.mm.yy hh:mm
         private const string c_sExporterDirectory = "Text";
         private const string c_sMessagesFile = "Messages.txt"; // Messages for one dialog
+        private const string c_sLinksFile = "Links.txt"; // Links for one dialog
         private const string c_sLogsFile = "Logs.txt"; // Logs for one dialog
         private const string c_sErrorTag = "### Error:"; // Used to identify error in logs
 
@@ -19,6 +20,7 @@ namespace TLArchiver.Exporter
         {
             m_sExporterDirectory = c_sExporterDirectory;
             m_sMessagesFile = c_sMessagesFile;
+            m_sLinksFile = c_sLinksFile;
             m_sLogsFile = c_sLogsFile;
             Initialize(sDirectory);
         }
@@ -44,6 +46,11 @@ namespace TLArchiver.Exporter
                         string sFileName = ExportDocument((TLMessageMediaDocument)message.media);
                         Prepend(String.Format("[{0}]", sFileName));
                     }
+                    else if (message.media.GetType() == typeof(TLMessageMediaWebPage))
+                    {
+                        //string sFileName = ExportLink((TLMessageMediaWebPage)message.media);
+                        //Prepend(String.Format("[{0}]", sFileName));
+                    }
                     else
                         throw new TLCoreException(String.Format("Media not handled: {0}", message.media.ToString()));
                 }
@@ -64,6 +71,12 @@ namespace TLArchiver.Exporter
             if (message.message != "")
                 Prepend(message.message);
             Prepend(m_sHeader);
+
+            if (ProcessLink(message.message))
+            {
+                PrependLink(m_sHeader);
+                PrependLink("");
+            }
         }
 
         public override void ExportMessageService(TLMessageService message)

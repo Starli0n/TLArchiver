@@ -59,7 +59,7 @@ namespace TLArchiver.UI
             {
                 m_dgvDialogs.Columns["Total"].Visible = false; // Hide the 'Total' column
                 m_dgvDialogs.Columns["Closed"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill; // Become the last column
-                Width -= 80;
+                Width -= 50;
             }
             m_dgvDialogs.Columns["AccessHash"].Visible = false; // Hide the 'AccessHash' column
             m_dgvDialogs.Columns["Title"].Width = 200; // Enlarge the 'Title' column
@@ -302,6 +302,7 @@ namespace TLArchiver.UI
                 m_cbPhotos.Checked = m_cbContentAll.Checked;
                 m_cbVideos.Checked = m_cbContentAll.Checked;
                 m_cbVoiceMessages.Checked = m_cbContentAll.Checked;
+                m_cbLinks.Checked = m_cbContentAll.Checked;
                 SetExportStatus();
             }
             finally
@@ -317,9 +318,9 @@ namespace TLArchiver.UI
             m_bIsContentCheckedChanging = true;
             try
             {
-                if (m_cbMessages.Checked && m_cbFiles.Checked && m_cbPhotos.Checked && m_cbVideos.Checked && m_cbVoiceMessages.Checked)
+                if (m_cbMessages.Checked && m_cbFiles.Checked && m_cbPhotos.Checked && m_cbVideos.Checked && m_cbVoiceMessages.Checked && m_cbLinks.Checked)
                     m_cbContentAll.CheckState = CheckState.Checked;
-                else if (!m_cbMessages.Checked && !m_cbFiles.Checked && !m_cbPhotos.Checked && !m_cbVideos.Checked && !m_cbVoiceMessages.Checked)
+                else if (!m_cbMessages.Checked && !m_cbFiles.Checked && !m_cbPhotos.Checked && !m_cbVideos.Checked && !m_cbVoiceMessages.Checked && !m_cbLinks.Checked)
                     m_cbContentAll.CheckState = CheckState.Unchecked;
                 else
                     m_cbContentAll.CheckState = CheckState.Indeterminate;
@@ -438,6 +439,7 @@ namespace TLArchiver.UI
             m_config.ExportPhotos = m_cbPhotos.Checked;
             m_config.ExportVideos = m_cbVideos.Checked;
             m_config.ExportVoiceMessages = m_cbVoiceMessages.Checked;
+            m_config.ExportLinks = m_cbLinks.Checked;
 
             m_config.ExportText = m_cbText.Checked;
             m_config.ExportHtml = m_cbHtml.Checked;

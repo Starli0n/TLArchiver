@@ -56,6 +56,7 @@
             this.m_cbHtml = new System.Windows.Forms.CheckBox();
             this.m_cbText = new System.Windows.Forms.CheckBox();
             this.m_cbExportAll = new System.Windows.Forms.CheckBox();
+            this.m_cbLinks = new System.Windows.Forms.CheckBox();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvDialogs)).BeginInit();
             this.m_gbDialogs.SuspendLayout();
@@ -224,6 +225,7 @@
             // 
             // m_gbContent
             // 
+            this.m_gbContent.Controls.Add(this.m_cbLinks);
             this.m_gbContent.Controls.Add(this.m_cbVoiceMessages);
             this.m_gbContent.Controls.Add(this.m_cbFiles);
             this.m_gbContent.Controls.Add(this.m_cbVideos);
@@ -232,7 +234,7 @@
             this.m_gbContent.Controls.Add(this.m_cbContentAll);
             this.m_gbContent.Location = new System.Drawing.Point(368, 12);
             this.m_gbContent.Name = "m_gbContent";
-            this.m_gbContent.Size = new System.Drawing.Size(193, 88);
+            this.m_gbContent.Size = new System.Drawing.Size(220, 88);
             this.m_gbContent.TabIndex = 13;
             this.m_gbContent.TabStop = false;
             this.m_gbContent.Text = "Content";
@@ -251,7 +253,7 @@
             // m_cbFiles
             // 
             this.m_cbFiles.AutoSize = true;
-            this.m_cbFiles.Location = new System.Drawing.Point(129, 19);
+            this.m_cbFiles.Location = new System.Drawing.Point(156, 19);
             this.m_cbFiles.Name = "m_cbFiles";
             this.m_cbFiles.Size = new System.Drawing.Size(47, 17);
             this.m_cbFiles.TabIndex = 4;
@@ -262,7 +264,7 @@
             // m_cbVideos
             // 
             this.m_cbVideos.AutoSize = true;
-            this.m_cbVideos.Location = new System.Drawing.Point(129, 42);
+            this.m_cbVideos.Location = new System.Drawing.Point(156, 42);
             this.m_cbVideos.Name = "m_cbVideos";
             this.m_cbVideos.Size = new System.Drawing.Size(58, 17);
             this.m_cbVideos.TabIndex = 3;
@@ -308,7 +310,7 @@
             this.m_gbExport.Controls.Add(this.m_cbHtml);
             this.m_gbExport.Controls.Add(this.m_cbText);
             this.m_gbExport.Controls.Add(this.m_cbExportAll);
-            this.m_gbExport.Location = new System.Drawing.Point(567, 12);
+            this.m_gbExport.Location = new System.Drawing.Point(594, 12);
             this.m_gbExport.Name = "m_gbExport";
             this.m_gbExport.Size = new System.Drawing.Size(102, 88);
             this.m_gbExport.TabIndex = 13;
@@ -347,6 +349,17 @@
             this.m_cbExportAll.Text = "All";
             this.m_cbExportAll.UseVisualStyleBackColor = true;
             this.m_cbExportAll.CheckedChanged += new System.EventHandler(this.m_cbExportAll_CheckedChanged);
+            // 
+            // m_cbLinks
+            // 
+            this.m_cbLinks.AutoSize = true;
+            this.m_cbLinks.Location = new System.Drawing.Point(156, 65);
+            this.m_cbLinks.Name = "m_cbLinks";
+            this.m_cbLinks.Size = new System.Drawing.Size(51, 17);
+            this.m_cbLinks.TabIndex = 6;
+            this.m_cbLinks.Text = "Links";
+            this.m_cbLinks.UseVisualStyleBackColor = true;
+            this.m_cbLinks.CheckedChanged += new System.EventHandler(this.m_cbContent_CheckedChanged);
             // 
             // FormTLArchiver
             // 
@@ -413,6 +426,7 @@
         private System.Windows.Forms.CheckBox m_cbText;
         private System.Windows.Forms.CheckBox m_cbExportAll;
         private System.Windows.Forms.CheckBox m_cbChannels;
+        private System.Windows.Forms.CheckBox m_cbLinks;
     }
 }
 

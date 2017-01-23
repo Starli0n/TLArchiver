@@ -47,6 +47,7 @@ namespace TLArchiver.Core
         public bool ExportPhotos { get; set; }
         public bool ExportVideos { get; set; }
         public bool ExportVoiceMessages { get; set; }
+        public bool ExportLinks { get; set; }
 
         public bool ExportText { get; set; }
         public bool ExportHtml { get; set; }
