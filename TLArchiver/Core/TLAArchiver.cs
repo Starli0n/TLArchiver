@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Reflection;
 using System.Threading;
 using TeleSharp.TL;
 using TeleSharp.TL.Contacts;
@@ -15,6 +19,7 @@ namespace TLArchiver.Core
     public class TLAArchiver
     {
         private Config m_config;
+        private WebProxy m_webProxy;
         private FileSessionStore m_store;
         private TelegramClient m_client;
         private string m_hash;
@@ -23,7 +28,68 @@ namespace TLArchiver.Core
         {
             m_config = config;
             m_store = new FileSessionStore();
-            m_client = new TelegramClient(m_config.ApiId, m_config.ApiHash, m_store, "session");
+            m_webProxy = CreateWebProxy(config);
+            m_client = new TelegramClient(m_config.ApiId, m_config.ApiHash, m_store, "session", ConnectViaHttpProxy);
+        }
+
+        static public WebProxy CreateWebProxy(Config config)
+        {
+            if (String.IsNullOrEmpty(config.HttpProxyHost))
+                return null;
+
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = Uri.UriSchemeHttp,
+                Host = config.HttpProxyHost,
+                Port = config.HttpProxyPort
+            };
+
+            var proxy = new WebProxy
+            {
+                Address = uriBuilder.Uri,
+                Credentials = new NetworkCredential(config.ProxyUserName, config.ProxyPassword)
+            };
+
+            return proxy;
+        }
+
+        public TcpClient ConnectViaHttpProxy(string targetHost, int targetPort)
+        {
+            if (m_webProxy == null)
+                return null;
+
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = Uri.UriSchemeHttp,
+                Host = targetHost,
+                Port = targetPort
+            };
+
+            var request = WebRequest.Create(uriBuilder.Uri);
+
+            request.Proxy = m_webProxy;
+            request.Method = "CONNECT";
+
+            var response = request.GetResponse();
+
+            var responseStream = response.GetResponseStream();
+            Debug.Assert(responseStream != null);
+
+            const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
+
+            var rsType = responseStream.GetType();
+            var connectionProperty = rsType.GetProperty("Connection", Flags);
+
+            var connection = connectionProperty.GetValue(responseStream, null);
+            var connectionType = connection.GetType();
+            var networkStreamProperty = connectionType.GetProperty("NetworkStream", Flags);
+
+            var networkStream = networkStreamProperty.GetValue(connection, null);
+            var nsType = networkStream.GetType();
+            var socketProperty = nsType.GetProperty("Socket", Flags);
+            var socket = (Socket)socketProperty.GetValue(networkStream, null);
+
+            return new TcpClient { Client = socket };
         }
 
         public void SendCodeRequest()
