@@ -61,7 +61,11 @@ namespace TLArchiver.Exporter
             string sub = dialog.Title;
             if (dialog.Type != TLADialogType.User)
                 sub += " - " + dialog.Type.ToString();
-            m_sDialogDirectory = Path.Combine(m_sExporterDirectory, sub);
+                string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+            Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+                
+                
+            m_sDialogDirectory = Path.Combine(m_sExporterDirectory, r.Replace(sub,""));
             Directory.CreateDirectory(m_sDialogDirectory);
 
             m_messages.Clear();
