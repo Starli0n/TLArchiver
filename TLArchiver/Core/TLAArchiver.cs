@@ -94,7 +94,7 @@ namespace TLArchiver.Core
 
         public void SendCodeRequest()
         {
-             m_hash = AsyncHelpers.RunSync<string>(() => m_client.SendCodeRequestAsync(m_config.NumberToAuthenticate));
+            m_hash = AsyncHelpers.RunSync<string>(() => m_client.SendCodeRequestAsync(m_config.NumberToAuthenticate));
         }
 
         public bool MakeAuth(string code)
@@ -132,63 +132,128 @@ namespace TLArchiver.Core
 
         public IEnumerable<TLADialog> GetUserDialogs()
         {
-            var dialogs = (TLDialogs)AsyncHelpers.RunSync<TLAbsDialogs>(() => m_client.GetUserDialogsAsync());
-            foreach (var absChat in dialogs.chats.lists)
+
+            var dialogs = (TLDialogsSlice)AsyncHelpers.RunSync<TLAbsDialogs>(() => m_client.GetUserDialogsAsync());
+            if (dialogs != null)
             {
-                if (absChat.GetType() == typeof(TLChat))
+                foreach (var absChat in dialogs.chats.lists)
                 {
-                    var chat = (TLChat)absChat;
-                    yield return new TLADialog()
+                    if (absChat.GetType() == typeof(TLChat))
                     {
-                        Id = chat.id,
-                        Type = TLADialogType.Chat,
-                        Title = chat.title,
-                        Date = Date.TLConvert(chat.date),
-                        Closed = false
-                    };
+                        var chat = (TLChat)absChat;
+                        yield return new TLADialog()
+                        {
+                            Id = chat.id,
+                            Type = TLADialogType.Chat,
+                            Title = chat.title,
+                            Date = Date.TLConvert(chat.date),
+                            Closed = false
+                        };
+                    }
+                    else if (absChat.GetType() == typeof(TLChannel))
+                    {
+                        var channel = (TLChannel)absChat;
+                        if (channel.access_hash == null)
+                            throw new TLAccessHashException();
+                        yield return new TLADialog()
+                        {
+                            Id = channel.id,
+                            AccessHash = channel.access_hash.Value,
+                            Type = TLADialogType.Channel,
+                            Title = channel.title,
+                            Date = Date.TLConvert(channel.date),
+                            Closed = false
+                        };
+                    }
+                    else if (absChat.GetType() == typeof(TLChatForbidden))
+                    {
+                        var chatF = (TLChatForbidden)absChat;
+                        yield return new TLADialog()
+                        {
+                            Id = chatF.id,
+                            Type = TLADialogType.Chat,
+                            Title = chatF.title,
+                            Closed = true
+                        };
+                    }
+                    else if (absChat.GetType() == typeof(TLChannelForbidden))
+                    {
+                        var channelF = (TLChannelForbidden)absChat;
+                        yield return new TLADialog()
+                        {
+                            Id = channelF.id,
+                            AccessHash = channelF.access_hash,
+                            Type = TLADialogType.Channel,
+                            Title = channelF.title,
+                            Closed = true
+                        };
+                    }
+                    else
+                        throw new TLCoreException("Type of TLDialog is unknown");
                 }
-                else if (absChat.GetType() == typeof(TLChannel))
+            }
+            else
+            {
+                var dialogsSlice = (TLDialogs)AsyncHelpers.RunSync<TLAbsDialogs>(() => m_client.GetUserDialogsAsync());
+                foreach (var absChat in dialogsSlice.chats.lists)
                 {
-                    var channel = (TLChannel)absChat;
-                    if (channel.access_hash == null)
-                        throw new TLAccessHashException();
-                    yield return new TLADialog()
+                    if (absChat.GetType() == typeof(TLChat))
                     {
-                        Id = channel.id,
-                        AccessHash = channel.access_hash.Value,
-                        Type = TLADialogType.Channel,
-                        Title = channel.title,
-                        Date = Date.TLConvert(channel.date),
-                        Closed = false
-                    };
-                }
-                else if (absChat.GetType() == typeof(TLChatForbidden))
-                {
-                    var chatF = (TLChatForbidden)absChat;
-                    yield return new TLADialog()
+                        var chat = (TLChat)absChat;
+                        yield return new TLADialog()
+                        {
+                            Id = chat.id,
+                            Type = TLADialogType.Chat,
+                            Title = chat.title,
+                            Date = Date.TLConvert(chat.date),
+                            Closed = false
+                        };
+                    }
+                    else if (absChat.GetType() == typeof(TLChannel))
                     {
-                        Id = chatF.id,
-                        Type = TLADialogType.Chat,
-                        Title = chatF.title,
-                        Closed = true
-                    };
-                }
-                else if (absChat.GetType() == typeof(TLChannelForbidden))
-                {
-                    var channelF = (TLChannelForbidden)absChat;
-                    yield return new TLADialog()
+                        var channel = (TLChannel)absChat;
+                        if (channel.access_hash == null)
+                            throw new TLAccessHashException();
+                        yield return new TLADialog()
+                        {
+                            Id = channel.id,
+                            AccessHash = channel.access_hash.Value,
+                            Type = TLADialogType.Channel,
+                            Title = channel.title,
+                            Date = Date.TLConvert(channel.date),
+                            Closed = false
+                        };
+                    }
+                    else if (absChat.GetType() == typeof(TLChatForbidden))
                     {
-                        Id = channelF.id,
-                        AccessHash = channelF.access_hash,
-                        Type = TLADialogType.Channel,
-                        Title = channelF.title,
-                        Closed = true
-                    };
+                        var chatF = (TLChatForbidden)absChat;
+                        yield return new TLADialog()
+                        {
+                            Id = chatF.id,
+                            Type = TLADialogType.Chat,
+                            Title = chatF.title,
+                            Closed = true
+                        };
+                    }
+                    else if (absChat.GetType() == typeof(TLChannelForbidden))
+                    {
+                        var channelF = (TLChannelForbidden)absChat;
+                        yield return new TLADialog()
+                        {
+                            Id = channelF.id,
+                            AccessHash = channelF.access_hash,
+                            Type = TLADialogType.Channel,
+                            Title = channelF.title,
+                            Closed = true
+                        };
+                    }
+                    else
+                        throw new TLCoreException("Type of TLDialog is unknown");
                 }
-                else
-                    throw new TLCoreException("Type of TLDialog is unknown");
             }
         }
+
+
 
         public TLAbsInputPeer CreatePeerFromDialog(TLADialog dialog)
         {
